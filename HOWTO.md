@@ -5,7 +5,7 @@ I assume you have your desired game files ready. This guide is divided into the 
 2. [Jackets](###Jackets)
 3. [Song Audio](###Song%20Audio)
 
-Before beginning the process, I recommend creating a dedicated folder that will hold your prepared files. The guide will refer to this theoretical **working folder** as `repack` for an example.
+Before beginning the process, I recommend creating a dedicated folder that will hold your prepared files. As an example, I will refer to this theoretical **working folder** as `repack`.
 
 ### Metadata
 1. Grab the latest [UAssetGUI](https://github.com/atenfyr/UAssetGUI).
@@ -16,7 +16,7 @@ Before beginning the process, I recommend creating a dedicated folder that will 
 We're done with UAssetGUI now. Feel free to close it.
 
 ### Jackets
-For the moment, this process pulls jackets available from WACCA's song listing website.
+For the moment, this process pulls jackets available from WACCA's song listings website. This unfortunately means that some songs may not have a jacket.
 
 ### Song Audio
-Make sure you have the latest publically available game files. This process will likely not work with older files!
+Make sure you have the latest publicly available game files. This process will likely not work with older files!

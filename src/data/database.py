@@ -1,7 +1,7 @@
 import os
 import re
 import json
-from metadata import Difficulty, SongMetadata
+from src.data.metadata import Difficulty, SongMetadata
 
 jackets_dir = "./data/jackets"
 '''
@@ -20,6 +20,8 @@ audio_dir = "./data/MER_BGM"
 '''
 Path to folder which contains song audio.
 '''
+
+metadata_path = "./data/metadata.json"
 
 ## NOTE: ID KEYS ARE HYPHENATED
 ## S03-014, not S03_014
@@ -53,7 +55,7 @@ def _init_songs():
 	print('Initializing charts metadata...')
 	metadata.clear()
 	md_json: list
-	with open("./data/metadata.json", "r", encoding='utf_8') as read_file:
+	with open(metadata_path, "r", encoding='utf_8') as read_file:
 		md_json = json.load(read_file)['Exports'][0]["Table"]["Data"]
 	
 	for elem in md_json: # songs
@@ -203,8 +205,10 @@ def _populate_missing():
 	for k in missing_audio:
 		s = metadata[k]
 		print(f'{s.id}: {s.name} - {s.artist}')
+	print()
 	# print missing jackets
 	print(f'Missing jacket: {len(missing_jackets)}')
 	for k in missing_jackets:
 		s = metadata[k]
 		print(f'{s.id}: {s.name} - {s.artist}')
+	print()

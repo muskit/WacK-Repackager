@@ -18,24 +18,37 @@ This is how it's stored in WACCA's files (MusicData).
 
 audio_dir = "./data/MER_BGM"
 '''
-Path to folder which contains music audio.
+Path to folder which contains song audio.
 '''
 
-# ID to song metadata
+## NOTE: ID KEYS ARE HYPHENATED
+## S03-014, not S03_014
 metadata: dict[str, SongMetadata] = dict()
+'''ID to SongMetadata'''
 
-# ID to audio path
 audio_file: dict[str, str] = dict()
+'''ID to audio filename'''
 
-# ID to jacket path 
 jacket_file: dict[str, str] = dict()
+'''ID to jacket filename'''
+
+missing_audio: list[str] = list()
+'''List of songs missing audio'''
+
+missing_jackets: list[str] = list()
+'''List of songs missing jacket'''
 
 def init():
-	__init_songs()
-	__init_audio_paths()
-	__init_jacket_paths()
+	_init_songs()
+	_init_audio_paths()
+	_init_jacket_paths()
+	print(f'{len(metadata)} songs\' metadata found')
+	print(f'{len(jacket_file)} jackets found')
+	print(f'{len(audio_file)} audio files found')
+	_populate_missing()
+	# print(audio_file)
 
-def __init_songs():
+def _init_songs():
 	print('Initializing charts metadata...')
 	metadata.clear()
 	md_json: list
@@ -152,26 +165,45 @@ def __init_songs():
 			difficulties=difficulties
 		)
 
-def __init_audio_paths():
+def _init_audio_paths():
 	print(f'Finding audio in {audio_dir}')
-	for root, _, files in os.walk(audio_dir):
+	for _, _, files in os.walk(audio_dir):
 		for f in files:
 			m = re.search(r"S\d\d_\d\d\d", f)
 			if m is None: continue
 			
-			id = m.group()
+			_id = m.group()
+			id = f'{_id[:3]}-{_id[4:]}'
 			if id in audio_file:
 				# lexicographically smaller file has proper audio
 				audio_file[id] = min(audio_file[id], f)
 			else:
 				audio_file[id] = f
-			print(f'{id} = {audio_file[id]}')
 
-def __init_jacket_paths():
+def _init_jacket_paths():
 	print(f'Finding jackets in {jackets_dir}')
-	for root, _, files in os.walk(jackets_dir):
+	for _, _, files in os.walk(jackets_dir):
 		for f in files:
 			m = re.search(r'S\d\d-\d\d\d', f)
 			if m is None: continue
 			jacket_file[m.group()] = f
-			print(f'{m.group()} = {f}')
+
+def _populate_missing():
+	for k in metadata:
+		# check missing audio
+		if k not in audio_file:
+			missing_audio.append(k)
+		# check missing jackets
+		if k not in jacket_file:
+			missing_jackets.append(k)
+	
+	# print missing audio
+	print(f'Missing audio: {len(missing_audio)}')
+	for k in missing_audio:
+		s = metadata[k]
+		print(f'{s.id}: {s.name} - {s.artist}')
+	# print missing jackets
+	print(f'Missing jacket: {len(missing_jackets)}')
+	for k in missing_jackets:
+		s = metadata[k]
+		print(f'{s.id}: {s.name} - {s.artist}')

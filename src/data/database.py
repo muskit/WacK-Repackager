@@ -1,7 +1,7 @@
 import os
 import re
 import json
-from src.data.metadata import Difficulty, SongMetadata
+from .metadata import Difficulty, SongMetadata
 
 jackets_dir = "./data/jackets"
 '''

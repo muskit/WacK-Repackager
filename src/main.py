@@ -1,4 +1,4 @@
-import src.data.database as database
+import data.database as database
 
 def main():
 	print("============== WacK Repackager ==============")

@@ -1,27 +1,9 @@
 import os
 import re
 import json
+
+import config
 from .metadata import Difficulty, SongMetadata
-
-jackets_dir = "./data/jackets"
-'''
-Path to folder which contains song jackets.
-'''
-
-charts_dir = "./data/MusicData"
-'''
-Path to folder which contains charts.
-
-Folder should only contain song ID-named folders, each of which contain .mer files.
-This is how it's stored in WACCA's files (MusicData).
-'''
-
-audio_dir = "./data/MER_BGM"
-'''
-Path to folder which contains song audio.
-'''
-
-metadata_path = "./data/metadata.json"
 
 ## NOTE: ID KEYS ARE HYPHENATED
 ## S03-014, not S03_014
@@ -55,7 +37,7 @@ def _init_songs():
 	print('Initializing charts metadata...')
 	metadata.clear()
 	md_json: list
-	with open(metadata_path, "r", encoding='utf_8') as read_file:
+	with open(config.path_metadata, "r", encoding='utf_8') as read_file:
 		md_json = json.load(read_file)['Exports'][0]["Table"]["Data"]
 	
 	for elem in md_json: # songs
@@ -126,7 +108,7 @@ def _init_songs():
 			continue
 
 		# mer difficulty-audio IDs
-		mer_dir = f'{charts_dir}/{id}'
+		mer_dir = f'{config.path_charts}/{id}'
 		for root, _, files in os.walk(f'{mer_dir}'):
 			for f in files:
 				diff_idx = int(re.search(r"\d\d.mer", f).group()[:2])
@@ -169,8 +151,8 @@ def _init_songs():
 		)
 
 def _init_audio_paths():
-	print(f'Finding audio in {audio_dir}')
-	for _, _, files in os.walk(audio_dir):
+	print(f'Finding audio in {config.path_audio}')
+	for _, _, files in os.walk(config.path_audio):
 		for f in files:
 			m = re.search(r"S\d\d_\d\d\d", f)
 			if m is None: continue
@@ -184,8 +166,8 @@ def _init_audio_paths():
 				audio_file[id] = f
 
 def _init_jacket_paths():
-	print(f'Finding jackets in {jackets_dir}')
-	for _, _, files in os.walk(jackets_dir):
+	print(f'Finding jackets in {config.path_jackets}')
+	for _, _, files in os.walk(config.path_jackets):
 		for f in files:
 			m = re.search(r'S\d\d-\d\d\d', f)
 			if m is None: continue

@@ -49,6 +49,7 @@ def _init_songs():
 		tempo: str
 		audio_preview: str
 		audio_preview_len: str
+		background_video: list[str] = [None, None, None, None]
 		levels: list[str] = [None, None, None, None]
 		level_audio: list[str] = [None, None, None, None] # from .mer
 		level_designer: list[str] = [None, None, None, None]
@@ -59,48 +60,57 @@ def _init_songs():
 			if key['Name'] == 'AssetDirectory':
 				id = key['Value']
 			#SongInfo
-			if key['Name'] == 'ScoreGenre':
+			elif key['Name'] == 'ScoreGenre':
 				genre = int(key['Value'])
-			if key['Name'] == 'MusicMessage':
+			elif key['Name'] == 'MusicMessage':
 				name = key['Value']
-			if key['Name'] == 'ArtistMessage':
+			elif key['Name'] == 'ArtistMessage':
 				artist = key['Value']
-			if key['Name'] == 'Bpm':
+			elif key['Name'] == 'Bpm':
 				tempo = key['Value']
-			if key['Name'] == 'CopyrightMessage':
+			elif key['Name'] == 'CopyrightMessage' and key['Value'] not in ['', '-', None]:
 				copyright = key['Value']
 			#ChartInfo Levels; "+0" = no chart
-			if key['Name'] == 'DifficultyNormalLv':
+			elif key['Name'] == 'DifficultyNormalLv':
 				levels[0] = key['Value']
-			if key['Name'] == 'DifficultyHardLv':
+			elif key['Name'] == 'DifficultyHardLv':
 				levels[1] = key['Value']
-			if key['Name'] == 'DifficultyExtremeLv':
+			elif key['Name'] == 'DifficultyExtremeLv':
 				levels[2] = key['Value']
-			if key['Name'] == 'DifficultyInfernoLv':
+			elif key['Name'] == 'DifficultyInfernoLv':
 				levels[3] = key['Value']
 			#Audio Previews
-			if key['Name'] == 'PreviewBeginTime':
+			elif key['Name'] == 'PreviewBeginTime':
 				audio_preview = key['Value']
-			if key['Name'] == 'PreviewSeconds':
+			elif key['Name'] == 'PreviewSeconds':
 				audio_preview_len = key['Value']
 			#Clear Requirements
-			if key['Name'] == 'ClearNormaRateNormal':
+			elif key['Name'] == 'ClearNormaRateNormal':
 				level_clear_requirements[0] = key['Value']
-			if key['Name'] == 'ClearNormaRateHard':
+			elif key['Name'] == 'ClearNormaRateHard':
 				level_clear_requirements[1] = key['Value']
-			if key['Name'] == 'ClearNormaRateExpert':
+			elif key['Name'] == 'ClearNormaRateExpert':
 				level_clear_requirements[2] = key['Value']
-			if key['Name'] == 'ClearNormaRateInferno':
+			elif key['Name'] == 'ClearNormaRateInferno':
 				level_clear_requirements[3] = key['Value']
 			#ChartInfo Designers
-			if key['Name'] == 'NotesDesignerNormal':
+			elif key['Name'] == 'NotesDesignerNormal':
 				level_designer[0] = key['Value']
-			if key['Name'] == 'NotesDesignerHard':
+			elif key['Name'] == 'NotesDesignerHard':
 				level_designer[1] = key['Value']
-			if key['Name'] == 'NotesDesignerExpert':
+			elif key['Name'] == 'NotesDesignerExpert':
 				level_designer[2] = key['Value']
-			if key['Name'] == 'NotesDesignerInferno':
+			elif key['Name'] == 'NotesDesignerInferno':
 				level_designer[3] = key['Value']
+			#Video Backgrounds
+			elif key['Name'] == 'MovieAssetName' and key['Value'] not in ['', '-', None]:
+				background_video[0] = key['Value']
+			elif key['Name'] == 'MovieAssetNameHard' and key['Value'] not in ['', '-', None]:
+				background_video[1] = key['Value']
+			elif key['Name'] == 'MovieAssetNameExpert' and key['Value'] not in ['', '-', None]:
+				background_video[2] = key['Value']
+			elif key['Name'] == 'MovieAssetNameInferno' and key['Value'] not in ['', '-', None]:
+				background_video[3] = key['Value']
 
 		# print(f'{id}: {name} - {artist}')
 		if 'S99' in id:
@@ -131,15 +141,20 @@ def _init_songs():
 		difficulties: list[Difficulty] = [None, None, None, None]
 		for i, audio in enumerate(level_audio):
 			if audio is None: continue
-			difficulties[i] = Difficulty (
+			curd =  Difficulty (
 				audio_id=audio[0],
 				audio_offset=audio[1],
 				audio_preview_time=audio_preview,
 				audio_preview_length=audio_preview_len,
+				video_id=background_video[i],
 				designer=level_designer[i],
 				clearRequirement=level_clear_requirements[i],
 				diffLevel=levels[i]
 			)
+			# use base video bg if video bg for this diff doesn't exist
+			if i != 0 and background_video[i] is None and background_video[0] is not None:
+				curd.video_id =  background_video[0]
+			difficulties[i] = curd
 		metadata[id] = SongMetadata(
 			id=id,
 			name=name,

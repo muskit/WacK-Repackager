@@ -22,14 +22,13 @@ This is how it's stored in WACCA's files (MusicData).
 '''
 
 path_audio: str = '../data/MER_BGM'
-'''
-Path to folder which contains song audio.
-'''
+'''Path to folder which contains song audio.'''
 
 path_jackets: str = '../data/jackets'
-'''
-Path to folder which contains song jackets.
-'''
+'''Path to folder which contains song jackets.'''
+
+path_movies: str = '../data/movies'
+'''Path to folder which contains movies (music video backgrounds)'''
 
 ## UI
 ui_dark = False
@@ -50,6 +49,7 @@ def load():
 	path_charts = cfp.get('paths', 'dir_charts', fallback=path_charts)
 	path_audio = cfp.get('paths', 'dir_audio', fallback=path_audio)
 	path_jackets = cfp.get('paths', 'dir_jackets', fallback=path_jackets)
+	path_movies = cfp.get('paths', 'dir_movies', fallback=path_movies)
 	ui_dark = cfp.getboolean('ui', 'dark_mode', fallback=ui_dark)
 
 	config_loaded = True
@@ -63,6 +63,7 @@ def save():
 	cfp['paths']['dir_charts'] = path_charts
 	cfp['paths']['dir_audio'] = path_audio
 	cfp['paths']['dir_jackets'] = path_jackets
+	cfp['paths']['dir_movies'] = path_movies
 
 	## UI
 	cfp['ui']['dark_mode'] = ui_dark

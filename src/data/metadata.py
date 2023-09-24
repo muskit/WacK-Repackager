@@ -26,6 +26,7 @@ class Difficulty:
 	audio_offset: str
 	audio_preview_time: str
 	audio_preview_length: str
+	video_id: str | None
 	designer: str
 	clearRequirement: str
 	diffLevel: str

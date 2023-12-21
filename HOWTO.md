@@ -20,7 +20,7 @@ We're done with UAssetGUI now. Feel free to close it.
 Simply copy the `<WACCA>/app/WindowsNoEditor/Mercury/Content/MusicData` folder into `repack`.
 
 ### Song Audio (`repack/MER_BGM`)
-This process is quite odd, and depending on the game files you have, you may end up with missing audio and/or mismatches. To minimize this, make sure you have the latest publicly available game files.
+At the moment this process is quite convoluted, and depending on the game files you have, you may end up with missing audio and/or mismatches. To minimize this, make sure you have the latest publicly available game files.
 
 #### .awb Audio Stream Files
 In `<WACCA>\app\WindowsNoEditor\Mercury\Content\Sound\Bgm`, copy `MER_BGM*.awb` into `repack/MER_BGM`. You will likely be copying the following files:

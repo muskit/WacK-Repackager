@@ -79,7 +79,7 @@ For each .acb file (starting with MER_BGM.acb)...
 
 | ACB File          | Cue IDs               |
 |-------------------|-----------------------|
-| MER_BGM.acb       | 1-365, 373            |
+| MER_BGM.acb       | 1-350, 352-365, 373   |
 | MER_BGM_V3_01.acb | 366-368               |
 | MER_BGM_V3_02.acb | 369-371               |
 | MER_BGM_V3_03.acb | 372,374               |

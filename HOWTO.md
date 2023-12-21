@@ -43,7 +43,14 @@ Have a binary-friendly editor ready. Notepad++ might work but could potentially 
 	- For example, if there exists `MER_BGM_V3_01.awb`, duplicate `MER_BGM.acb` as `MER_BGM_V3_01.acb`. And if there exists `MER_BGM_V3_02.awb`, duplicate `MER_BGM.acb` as `MER_BGM_V3_02.acb`, and so on...
 
 #### Converting Audio
+Notice that there are two file types in this folder:
+- **.awb** - essentially a bundle of audio streams, each of which is referred to as a "cue."
+- **.acb** - indices for its associated .awb file. gives a name to each audio cue in the .awb.
+
+WACCA splits up the BGM audio streams into different .awb files. However, there is only one .acb index file, which we've duplicated to correspond to each .awb. Our job now is to pair each of the .awb streams to its corresponding index in the .acb.
+
 You will need the latest version of [Audio Cue Editor](https://github.com/LazyBone152/ACE) for this.
+
 
 ### Jackets
 For the moment, this process pulls jackets available from WACCA's song listings website. This unfortunately means that some songs may not have a jacket.

@@ -38,6 +38,7 @@ class Difficulty:
 @dataclass
 class SongMetadata:
 	id: str
+	'''Format: Snn-nnn'''
 	name: str
 	artist: str
 	genre_id: int

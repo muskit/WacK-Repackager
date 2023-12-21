@@ -40,7 +40,7 @@ Have a binary-friendly editor ready. Notepad++ might work but could potentially 
 2. Delete any content leading up to the string `@UTF`. Most likely you will be deleting the first 0xDB bytes of the file. This edit should leave `@UTF` as the very first content of this file.
 3. Save this edited file as `repack/MER_BGM/MER_BGM.acb`.
 4. **For every .awb file in this working subfolder**, duplicate and rename your newly-created MER_BGM.acb after its file.
-	- For example, if there exists `MER_BGM_V3_01.awb`, duplicate `MER_BGM.acb` as `MER_BGM_V3_01.acb`.
+	- For example, if there exists `MER_BGM_V3_01.awb`, duplicate `MER_BGM.acb` as `MER_BGM_V3_01.acb`. And if there exists `MER_BGM_V3_02.awb`, duplicate `MER_BGM.acb` as `MER_BGM_V3_02.acb`, and so on...
 
 #### Converting Audio
 You will need the latest version of [Audio Cue Editor](https://github.com/LazyBone152/ACE) for this.

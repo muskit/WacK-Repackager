@@ -41,14 +41,14 @@ def _init_songs():
 		md_json = json.load(read_file)['Exports'][0]["Table"]["Data"]
 	
 	for elem in md_json: # songs
-		id: str
-		genre: int
-		name: str
-		artist: str
-		copyright: str
-		tempo: str
-		audio_preview: str
-		audio_preview_len: str
+		id: str = None
+		genre: int = None
+		name: str = None
+		artist: str = None
+		copyright: str = None
+		tempo: str = None
+		audio_preview: str = None
+		audio_preview_len: str = None
 		background_video: list[str] = [None, None, None, None]
 		levels: list[str] = [None, None, None, None]
 		level_audio: list[str] = [None, None, None, None] # from .mer

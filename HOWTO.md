@@ -110,7 +110,7 @@ S03-036: Lights of Muse - Ayatsugu_Otowa
 S02-036: ARTEMiS - BlackY
 ```
 
-**This section took me probably a week to work out. Hopefully this process will no longer be necessary, as that should be needed is a batch-extract of the AWBs and a community-organized lookup table to programically pair the audio properly.**
+**This section took me probably a week to work out. Hopefully this process will no longer be necessary, and all that should be needed is an easily-done batch-extract of the AWBs and a community-organized lookup table to programically pair the audio.**
 
 ## Jackets
 For the moment, this process pulls jackets available from WACCA's song listings website. This unfortunately means that some songs may not have a jacket.

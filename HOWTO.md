@@ -66,8 +66,8 @@ repack/
 
 #### Converting Audio
 Notice that we're working with two file types in this folder:
-- **.awb** - essentially a bundle of audio streams, each of which is referred to as a "cue."
-- **.acb** - indexes for its associated .awb file. gives a name (containing song ID) to each audio cue in the .awb.
+- **.awb** - essentially a bundle of audio streams.
+- **.acb** - indexes for its associated .awb file. gives a name (containing song ID) to each audio cue, which points to streams in the .awb.
 
 WACCA splits up the BGM audio streams into different .awb files. However, there is only one .acb index file, which we've duplicated to correspond to each .awb. Our job now is to pair each of the .awb streams to its corresponding index in the .acb. This method will work for *most* of the song audio. However, some .awb audio streams won't correspond to the .acb indexes we've just set up. Alternative methods are being looked into to recover erroneous audio streams.
 
@@ -88,7 +88,7 @@ For each .acb file (starting with MER_BGM.acb)...
 | MER_BGM_V3_06.acb | 391-394               |
 | MER_BGM_V3_07.acb | 396-*                 |
 
-3. When you click on a cue ID, two audio tracks will pop up. The first one is the one you should extract; the second is EQ'd differently, presumably for the cabinet speakers.
+3. When you click on a cue ID, two audio tracks will pop up. **The first one is the one you should extract.** The second is EQ'd differently, presumably for the cabinet speakers.
 4. For each cue ID according to the table above, extract that first track audio to `repack/MER_BGM`.
 
 

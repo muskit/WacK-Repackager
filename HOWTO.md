@@ -93,6 +93,20 @@ You can ignore cues whose name isn't named formatted as "MER_BGM_Snn_nnn" (unles
 3. When you click on a cue ID, two audio tracks will pop up. **The first one is the one you should extract.** The second is EQ'd differently, presumably for the cabinet speakers.
 4. For each cue ID according to the table above, extract that first track audio to `repack/MER_BGM`.
 
+Here are the audio streams that I couldn't find while assembling the table above:
+```
+S01-005: にめんせい☆ウラオモテライフ! - 土間うまる(田中あいみ)
+S01-049: EZ DO DANCE -K.O.P. REMIX- - 仁科カヅキ vs 大和アレクサンダー(増田俊樹・武内駿輔)
+S03-025: ∞(2018Remake) - cosMo＠暴走P feat.初音ミク
+S03-026: おねがいダーリン - OИE (song by ナナホシ管弦楽団)
+S03-024: 怪盗Fの台本（シナリオ）〜消えたダイヤの謎〜 - ひとしずく×やま△
+S03-042: NightTheater - わかどり
+S03-039: 恋のMoonlight - REDALiCE feat. 犬山たまき
+S03-038: Comet Coaster - DJ Noriken & aran
+S03-037: XODUS - DJ Myosuke & Gram
+S03-036: Lights of Muse - Ayatsugu_Otowa
+S02-036: ARTEMiS - BlackY
+```
 
 ### Jackets
 For the moment, this process pulls jackets available from WACCA's song listings website. This unfortunately means that some songs may not have a jacket.

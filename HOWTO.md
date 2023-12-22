@@ -1,14 +1,14 @@
 # Preparing files
 I assume you have your desired game files ready. This guide is divided into the following prep sections:
 
-1. [Metadata](###Metadata)
-2. [Charts](###Charts)
-3. [Song Audio](###Song%20Audio)
-4. [Jackets](###Jackets)
+1. [Metadata](##Metadata)
+2. [Charts](##Charts)
+3. [Song Audio](##Song%20Audio)
+4. [Jackets](##Jackets)
 
 Before beginning the process, I recommend creating a dedicated folder that will hold your prepared files. Throughout this guide, I will refer to this **working folder** as `repack`.
 
-### Metadata (`repack/metadata.json`)
+## Metadata (`repack/metadata.json`)
 1. Grab the latest [UAssetGUI](https://github.com/atenfyr/UAssetGUI).
 2. Open `<WACCA>/app/WindowsNoEditor/Mercury/Content/Table/MusicParameterTable.uasset` with UAssetGUI.
 3. In the toolbar, go to `File > Save As`.
@@ -16,13 +16,13 @@ Before beginning the process, I recommend creating a dedicated folder that will 
 
 We're done with UAssetGUI now. Feel free to close it.
 
-### Charts (`repack/MusicData`)
+## Charts (`repack/MusicData`)
 Simply copy the `<WACCA>/app/WindowsNoEditor/Mercury/Content/MusicData` folder into `repack`.
 
-### Song Audio (`repack/MER_BGM`)
+## Song Audio (`repack/MER_BGM`)
 At the moment this process is quite convoluted, and depending on the game files you have, you may end up with missing audio and/or mismatches. To minimize this, make sure you have the latest version (Reverse 3.07).
 
-#### .awb Audio Stream Files
+### .awb Audio Stream Files
 In `<WACCA>\app\WindowsNoEditor\Mercury\Content\Sound\Bgm`, copy `MER_BGM*.awb` into `repack/MER_BGM`. For Reverse 3.07, it is these files:
 - MER_BGM.awb
 - MER_BGM_V3_01.awb
@@ -33,7 +33,7 @@ In `<WACCA>\app\WindowsNoEditor\Mercury\Content\Sound\Bgm`, copy `MER_BGM*.awb` 
 - MER_BGM_V3_06.awb
 - MER_BGM_V3_07.awb
 
-#### .acb Files Creation
+### .acb Files Creation
 Have a binary-friendly editor ready. Notepad++ might work but could potentially mess things up due to encodings. I recommend using a hex editor like HxD instead.
 
 1. Open `<WACCA>\app\WindowsNoEditor\Mercury\Content\Sound\Bgm\MER_BGM.uexp` in your binary editor of choice.
@@ -42,7 +42,7 @@ Have a binary-friendly editor ready. Notepad++ might work but could potentially 
 4. **For every .awb file in this working subfolder**, duplicate and rename your newly-created MER_BGM.acb after its file.
 	- For example, if there exists `MER_BGM_V3_01.awb`, duplicate `MER_BGM.acb` as `MER_BGM_V3_01.acb`. And if there exists `MER_BGM_V3_02.awb`, duplicate `MER_BGM.acb` as `MER_BGM_V3_02.acb`, and so on...
 
-**On Reverse 3.07, you should have these files so far:**
+**If you're working with Reverse 3.07, you should have these files so far:**
 ```
 repack/
 └── MER_BGM/
@@ -64,7 +64,7 @@ repack/
     └── MER_BGM_V3_07.awb
 ```
 
-#### Converting Audio
+### Converting Audio
 Notice that we're working with two file types in this folder:
 - **.awb** - essentially a bundle of unnamed audio streams.
 - **.acb** - indexes for its associated .awb file. holds named "cues," which points to streams in the associated .awb.
@@ -72,6 +72,8 @@ Notice that we're working with two file types in this folder:
 WACCA splits up the BGM audio streams into different .awb files. However, there is only one .acb index file, which we've duplicated to correspond to each .awb. Our job now is to pair each of the .awb streams to its corresponding index in the .acb, which identifies the stream to a certain song ID. This method will work for *most* of the song audio. However, some .awb audio streams won't correspond to the .acb indexes we've just set up. Alternative methods are being looked into to recover erroneous audio streams.
 
 You will need the latest version of [Audio Cue Editor (ACE)](https://github.com/LazyBone152/ACE) for this.
+
+You will also need a lot of patience, as due to the odd formatting of these audio files, **every audio stream is going to be hand-extracted one by one.**
 
 For each .acb file (starting with MER_BGM.acb)...
 1. Load it into ACE.
@@ -108,5 +110,7 @@ S03-036: Lights of Muse - Ayatsugu_Otowa
 S02-036: ARTEMiS - BlackY
 ```
 
-### Jackets
+**This section took me probably a week to work out. Hopefully this process will no longer be necessary, as that should be needed is a batch-extract of the AWBs and a community-organized lookup table to programically pair the audio properly.**
+
+## Jackets
 For the moment, this process pulls jackets available from WACCA's song listings website. This unfortunately means that some songs may not have a jacket.

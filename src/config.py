@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 
-CONFIG_PATH = "../config.ini"
+CONFIG_PATH = "./config.ini"
 
 cfg_file_loaded: bool = None
 """If the config has been loaded or not.
@@ -37,8 +37,12 @@ def save():
     global working_path
 
     ## Paths
+    cfp.add_section("paths")
     cfp["paths"]["working_path"] = working_path
     cfp["paths"]["export_path"] = export_path
+
+    cfp.set("paths", "working_path", working_path)
+    cfp.set("paths", "export_path", export_path)
 
     with open(CONFIG_PATH, "w") as f:
         cfp.write(f)

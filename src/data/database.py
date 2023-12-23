@@ -176,7 +176,7 @@ def _init_songs():
         for i, audio in enumerate(level_audio):
             if audio is None:
                 continue
-            curd = Difficulty(
+            diff = Difficulty(
                 audio_id=audio[0],
                 audio_offset=audio[1],
                 audio_preview_time=audio_preview,
@@ -192,8 +192,8 @@ def _init_songs():
                 and background_video[i] is None
                 and background_video[0] is not None
             ):
-                curd.video_id = background_video[0]
-            difficulties[i] = curd
+                diff.video_id = background_video[0]
+            difficulties[i] = diff
         metadata[id] = SongMetadata(
             id=id,
             name=name,

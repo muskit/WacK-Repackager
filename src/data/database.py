@@ -45,8 +45,9 @@ def init():
 
 
 def _init_songs():
-    print("Initializing charts metadata...")
     metadata_path = f"{config.working_path}/metadata.json"
+    print(f"Initializing charts metadata from {metadata_path}...")
+
     metadata.clear()
     md_json: list
     with open(metadata_path, "r", encoding="utf_8") as read_file:
@@ -206,7 +207,11 @@ def _init_songs():
 
 
 def _init_audio_index():
-    with open("../awb.csv") as f:
+    csv_path = "../awb.csv"
+    print(f"Creating audio index from {csv_path}...")
+
+    audio_index.clear()
+    with open(csv_path) as f:
         reader = csv.reader(f)
         next(reader)  # skip header
 
@@ -221,8 +226,9 @@ def _init_audio_index():
 
 def _init_audio_paths():
     audio_dir = f"{config.working_path}/MER_BGM"
-    print(f"Finding audio in {audio_dir}")
+    print(f"Finding audio in {audio_dir}...")
 
+    audio_index.clear()
     for k, v in audio_index.items():
         f = f"{audio_dir}/{v[0]}/{v[1]}.wav"
         if os.path.exists(f):
@@ -233,7 +239,9 @@ def _init_audio_paths():
 
 def _init_jacket_paths():
     jackets_dir = f"{config.working_path}/jackets"
-    print(f"Finding jackets in {jackets_dir}")
+    print(f"Finding jackets in {jackets_dir}...")
+
+    jacket_file.clear()
     for _, _, files in os.walk(jackets_dir):
         for f in files:
             m = re.search(r"S\d\d-\d\d\d", f)
@@ -243,6 +251,9 @@ def _init_jacket_paths():
 
 
 def _populate_missing():
+    missing_audio.clear()
+    missing_jackets.clear()
+
     # populate
     for k in metadata:
         if k not in audio_file:

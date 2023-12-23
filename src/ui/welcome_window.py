@@ -8,3 +8,4 @@ class WelcomeWindow(Toplevel):
 
         self.title("Welcome")
         self.geometry("500x500")
+        self.resizable(False, False)

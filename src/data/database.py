@@ -228,7 +228,7 @@ def _init_audio_paths():
     audio_dir = f"{config.working_path}/MER_BGM"
     print(f"Finding audio in {audio_dir}...")
 
-    audio_index.clear()
+    audio_file.clear()
     for k, v in audio_index.items():
         f = f"{audio_dir}/{v[0]}/{v[1]}.wav"
         if os.path.exists(f):
@@ -264,13 +264,13 @@ def _populate_missing():
 
     # print
     print(f"Missing audio: {len(missing_audio)}")
-    for k in missing_audio:
-        s = metadata[k]
-        print(f"{s.id}: {s.name} - {s.artist}")
-    print()
+    # for k in missing_audio:
+    #     s = metadata[k]
+    #     print(f"{s.id}: {s.name} - {s.artist}")
+    # print()
 
     print(f"Missing jacket: {len(missing_jackets)}")
-    for k in missing_jackets:
-        s = metadata[k]
-        print(f"{s.id}: {s.name} - {s.artist}")
-    print()
+    # for k in missing_jackets:
+    #     s = metadata[k]
+    #     print(f"{s.id}: {s.name} - {s.artist}")
+    # print()

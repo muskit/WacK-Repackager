@@ -12,7 +12,7 @@ from .metadata import Difficulty, SongMetadata
 metadata: dict[str, SongMetadata] = dict()
 """ID to SongMetadata"""
 
-audio_index: dict[str, (str, int)] = dict()
+audio_index: dict[str, tuple[str, int]] = dict()
 """ID to AWB file and audio index"""
 
 audio_file: dict[str, str] = dict()
@@ -34,18 +34,22 @@ def init():
     _init_audio_index()
     _init_audio_paths()
     _init_jacket_paths()
+
     print(f"{len(metadata)} songs' metadata found")
     print(f"{len(jacket_file)} jackets found")
     print(f"{len(audio_file)} audio files found")
+    print()
+
     _populate_missing()
     # print(audio_file)
 
 
 def _init_songs():
     print("Initializing charts metadata...")
+    metadata_path = f"{config.working_path}/metadata.json"
     metadata.clear()
     md_json: list
-    with open(config.path_metadata, "r", encoding="utf_8") as read_file:
+    with open(metadata_path, "r", encoding="utf_8") as read_file:
         md_json = json.load(read_file)["Exports"][0]["Table"]["Data"]
 
     for elem in md_json:  # songs
@@ -146,7 +150,7 @@ def _init_songs():
             continue
 
         # mer difficulty-audio IDs
-        mer_dir = f"{config.path_charts}/{id}"
+        mer_dir = f"{config.working_path}/MusicData/{id}"
         for root, _, files in os.walk(f"{mer_dir}"):
             for f in files:
                 diff_idx = int(re.search(r"\d\d.mer", f).group()[:2])
@@ -164,8 +168,8 @@ def _init_songs():
                     if a_id and offset:
                         break
 
+                a_id = a_id.replace("_", "-")
                 level_audio[diff_idx] = (a_id, offset)
-                print(level_audio[diff_idx])
 
         # difficulty iteration -- level_audio has None for diffs w/o chart
         difficulties: list[Difficulty] = [None, None, None, None]
@@ -212,30 +216,25 @@ def _init_audio_index():
                 continue
             k = song_id_from_int(int(row[0]))
 
-            print(f"{k}: {v}")
             audio_index[k] = v
 
 
 def _init_audio_paths():
-    print(f"Finding audio in {config.path_audio}")
-    for _, _, files in os.walk(config.path_audio):
-        for f in files:
-            m = re.search(r"S\d\d_\d\d\d", f)
-            if m is None:
-                continue
+    audio_dir = f"{config.working_path}/MER_BGM"
+    print(f"Finding audio in {audio_dir}")
 
-            _id = m.group()
-            id = f"{_id[:3]}-{_id[4:]}"
-            if id in audio_file:
-                # lexicographically smaller file has proper audio
-                audio_file[id] = min(audio_file[id], f)
-            else:
-                audio_file[id] = f
+    for k, v in audio_index.items():
+        f = f"{audio_dir}/{v[0]}/{v[1]}.wav"
+        if os.path.exists(f):
+            audio_file[k] = f
+        else:
+            print(f"WARNING: Could not find audio for {k} ({f})!")
 
 
 def _init_jacket_paths():
-    print(f"Finding jackets in {config.path_jackets}")
-    for _, _, files in os.walk(config.path_jackets):
+    jackets_dir = f"{config.working_path}/jackets"
+    print(f"Finding jackets in {jackets_dir}")
+    for _, _, files in os.walk(jackets_dir):
         for f in files:
             m = re.search(r"S\d\d-\d\d\d", f)
             if m is None:
@@ -244,23 +243,23 @@ def _init_jacket_paths():
 
 
 def _populate_missing():
+    # populate
     for k in metadata:
-        # check missing audio
         if k not in audio_file:
             missing_audio.append(k)
-        # check missing jackets
+
         if k not in jacket_file:
             missing_jackets.append(k)
 
-    # # print missing audio
-    # print(f"Missing audio: {len(missing_audio)}")
-    # for k in missing_audio:
-    #     s = metadata[k]
-    #     print(f"{s.id}: {s.name} - {s.artist}")
-    # print()
-    # # print missing jackets
-    # print(f"Missing jacket: {len(missing_jackets)}")
-    # for k in missing_jackets:
-    #     s = metadata[k]
-    #     print(f"{s.id}: {s.name} - {s.artist}")
-    # print()
+    # print
+    print(f"Missing audio: {len(missing_audio)}")
+    for k in missing_audio:
+        s = metadata[k]
+        print(f"{s.id}: {s.name} - {s.artist}")
+    print()
+
+    print(f"Missing jacket: {len(missing_jackets)}")
+    for k in missing_jackets:
+        s = metadata[k]
+        print(f"{s.id}: {s.name} - {s.artist}")
+    print()

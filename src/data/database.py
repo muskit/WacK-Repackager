@@ -165,6 +165,7 @@ def _init_songs():
                         break
 
                 level_audio[diff_idx] = (a_id, offset)
+                print(level_audio[diff_idx])
 
         # difficulty iteration -- level_audio has None for diffs w/o chart
         difficulties: list[Difficulty] = [None, None, None, None]
@@ -251,15 +252,15 @@ def _populate_missing():
         if k not in jacket_file:
             missing_jackets.append(k)
 
-    # print missing audio
-    print(f"Missing audio: {len(missing_audio)}")
-    for k in missing_audio:
-        s = metadata[k]
-        print(f"{s.id}: {s.name} - {s.artist}")
-    print()
-    # print missing jackets
-    print(f"Missing jacket: {len(missing_jackets)}")
-    for k in missing_jackets:
-        s = metadata[k]
-        print(f"{s.id}: {s.name} - {s.artist}")
-    print()
+    # # print missing audio
+    # print(f"Missing audio: {len(missing_audio)}")
+    # for k in missing_audio:
+    #     s = metadata[k]
+    #     print(f"{s.id}: {s.name} - {s.artist}")
+    # print()
+    # # print missing jackets
+    # print(f"Missing jacket: {len(missing_jackets)}")
+    # for k in missing_jackets:
+    #     s = metadata[k]
+    #     print(f"{s.id}: {s.name} - {s.artist}")
+    # print()

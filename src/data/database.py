@@ -207,7 +207,7 @@ def _init_songs():
 
 
 def _init_audio_index():
-    csv_path = "../awb.csv"
+    csv_path = "./awb.csv"
     print(f"Creating audio index from {csv_path}...")
 
     audio_index.clear()

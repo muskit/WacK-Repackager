@@ -8,6 +8,7 @@ This is a guide to populating the `data` folder, which will eventually contain a
 2. [Charts](#charts-datamusicdata)
 3. [Song Audio](#song-audio-datamer_bgm)
 4. [Jackets](#jackets)
+4. [Videos](#videos)
 
 ## Metadata (`data/metadata.json`)
 1. Grab the latest [UAssetGUI](https://github.com/atenfyr/UAssetGUI).
@@ -38,7 +39,9 @@ For each of the files below located in `<WACCA>/app/WindowsNoEditor/Mercury/Cont
 
 ...follow these directions on each file:
 
-1. Create a folder in `data/MER_BGM` depending on the AWB file you're on:
+1. Load the file in ACE using `File > Load (AWB)`.
+    - If asked to open the matching ACB, click "No."
+2. Export all of the AWB's streams using `Tools > Extract All (wav)` into a folder in `data/MER_BGM` depending on the current AWB file according to the table:
 
 | AWB File          | Folder in MER_BGM |
 |-------------------|-------------------|
@@ -50,10 +53,6 @@ For each of the files below located in `<WACCA>/app/WindowsNoEditor/Mercury/Cont
 | MER_BGM_V3_05.awb | 05                |
 | MER_BGM_V3_06.awb | 06                |
 | MER_BGM_V3_07.awb | 07                |
-
-2. Load the file in ACE using `File > Load (AWB)`.
-    - If asked to open the matching ACB, click "No."
-3. Export all of the AWB's streams using `Tools > Extract All (wav)` into the folder you created earlier.
 
 ## Jackets
 For the moment, this process pulls jackets available from WACCA's song listings website. This unfortunately means that some songs may not have a jacket.

@@ -60,6 +60,7 @@ def _init_songs():
         artist: str = None
         copyright: str = None
         tempo: str = None
+        version: int = None
         audio_preview: str = None
         audio_preview_len: str = None
         background_video: list[str] = [None, None, None, None]
@@ -87,6 +88,8 @@ def _init_songs():
                 None,
             ]:
                 copyright = key["Value"]
+            elif key["Name"] == "VersionNo":
+                version = key["Value"]
             # ChartInfo Levels; "+0" = no chart
             elif key["Name"] == "DifficultyNormalLv":
                 levels[0] = key["Value"]
@@ -202,6 +205,7 @@ def _init_songs():
             genre_id=genre,
             copyright=copyright,
             tempo=tempo,
+            version=version,
             difficulties=difficulties,
         )
 

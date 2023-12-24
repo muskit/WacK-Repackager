@@ -22,6 +22,15 @@ class DifficultyName(Enum):
     Inferno = 3
 
 
+game_version = {
+    1: "WACCA",
+    2: "WACCA S",
+    3: "WACCA LILY",
+    4: "WACCA LILY R",
+    5: "WACCA Reverse",
+}
+
+
 @dataclass
 class Difficulty:
     audio_id: str
@@ -48,4 +57,5 @@ class SongMetadata:
     genre_id: int
     copyright: str
     tempo: str
+    version: int
     difficulties: list[Difficulty | None] = field(default_factory=list)

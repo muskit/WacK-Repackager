@@ -1,13 +1,15 @@
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
+from typing import Type
 
 import config
 
+from .data_setup import DataSetupWindow
+from .welcome_window import WelcomeWindow
+
 from .tabs.listing import ListingTab
 from .tabs.export import ExportTab
-
-from .welcome_window import WelcomeWindow
 
 
 class MainWidget(Notebook):
@@ -16,11 +18,11 @@ class MainWidget(Notebook):
         self.__init_widgets()
 
     def __init_widgets(self):
-        listing_tab = ListingTab(self)
-        export_tab = ExportTab(self)
+        self.listing_tab = ListingTab(self)
+        self.export_tab = ExportTab(self)
 
-        self.add(listing_tab, text="Songs")
-        self.add(export_tab, text="Export")
+        self.add(self.listing_tab, text="Songs")
+        self.add(self.export_tab, text="Export")
 
 
 class MainWindow(Tk):
@@ -31,6 +33,39 @@ class MainWindow(Tk):
         self.protocol("WM_DELETE_WINDOW", self.__exit)  # upon closing the window (X)
         self.__init_widgets()
         self.__post_init()
+
+    def __init_widgets(self):
+        # menu bar
+        menu_bar = Menu(self)
+
+        file_menu = Menu(menu_bar, tearoff=0)
+        file_menu.add_command(label="Open folder...", command=None)
+        file_menu.add_separator()
+        file_menu.add_command(label="Exit", command=self.__exit)
+        menu_bar.add_cascade(label="File", menu=file_menu)
+
+        about_menu = Menu(menu_bar, tearoff=0)
+        about_menu.add_command(
+            label="Open Welcome Screen",
+            command=lambda: self.show_and_focus_toplevel(WelcomeWindow),
+        )
+        about_menu.add_separator()
+        about_menu.add_command(label="About", command=None)
+        menu_bar.add_cascade(label="About", menu=about_menu)
+
+        self.config(menu=menu_bar)
+
+        # tabbed widget
+        tabbed = MainWidget(self)
+        tabbed.pack(expand=1, fill="both")
+
+    def __post_init(self):
+        self.center_to_screen()
+        if not config.cfg_file_loaded:
+            self.show_and_focus_toplevel(WelcomeWindow)
+            self.show_data_setup(True)
+        else:
+            self.show_data_setup(False)
 
     def center_to_screen(self):
         """Center window to screen."""
@@ -57,44 +92,16 @@ class MainWindow(Tk):
         dx, dy = w / 2 - tl_w / 2, h / 2 - tl_h / 2
         toplevel.geometry("%dx%d+%d+%d" % (tl_w, tl_h, x + dx, y + dy))
 
-    def __init_widgets(self):
-        # menu bar
-        menu_bar = Menu(self)
+    def show_and_focus_toplevel(self, TLClass: Type[Toplevel], *args, **kwargs):
+        win = TLClass(self, *args, **kwargs)
+        win.transient(self)
+        win.grab_set()
+        self.center_toplevel(win)
+        self.wait_window(win)
 
-        file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label="Open folder...", command=None)
-        file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.__exit)
-        menu_bar.add_cascade(label="File", menu=file_menu)
-
-        about_menu = Menu(menu_bar, tearoff=0)
-        about_menu.add_command(label="Open Welcome Screen", command=self.__show_welcome)
-        about_menu.add_separator()
-        about_menu.add_command(label="About", command=None)
-        menu_bar.add_cascade(label="About", menu=about_menu)
-
-        self.config(menu=menu_bar)
-
-        # tabbed widget
-        tabbed = MainWidget(self)
-        tabbed.pack(expand=1, fill="both")
-
-    def __post_init(self):
-        self.center_to_screen()
-        if not config.cfg_file_loaded:
-            print("First time opening!")
-            self.__show_welcome()
-            # open data_setup WITH folder picker
-        else:
-            # open data_setup WITHOUT folder picker
-            pass
-
-    def __show_welcome(self):
-        welcome = WelcomeWindow(self)
-        welcome.transient(self)
-        welcome.grab_set()
-        self.center_toplevel(welcome)
-        self.wait_window(welcome)
+    def show_data_setup(self, init_picker=False):
+        self.show_and_focus_toplevel(DataSetupWindow, init_picker)
+        # refresh listing tab
 
     def __exit(self):
         print("exit event invoked!")

@@ -1,3 +1,4 @@
+import os
 from configparser import ConfigParser
 
 CONFIG_PATH = "./config.ini"
@@ -9,9 +10,8 @@ None: config file has not attempted to load
 False: could not load config file  
 True: config file loaded successfully"""
 
-working_path: str = "./data"
-
-export_path: str = "./out"
+working_path: str = os.path.abspath("../data")
+export_path: str = os.path.abspath("../out")
 
 
 def load():

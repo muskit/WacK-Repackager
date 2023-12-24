@@ -39,7 +39,9 @@ class MainWindow(Tk):
         menu_bar = Menu(self)
 
         file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(label="Open folder...", command=None)
+        file_menu.add_command(
+            label="Change working folder...", command=self.show_data_setup
+        )
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.__exit)
         menu_bar.add_cascade(label="File", menu=file_menu)
@@ -99,8 +101,8 @@ class MainWindow(Tk):
         self.center_toplevel(win)
         self.wait_window(win)
 
-    def show_data_setup(self, init_picker=False):
-        self.show_and_focus_toplevel(DataSetupWindow, init_picker)
+    def show_data_setup(self, show_picker=False):
+        self.show_and_focus_toplevel(DataSetupWindow, show_picker)
         # refresh listing tab
 
     def __exit(self):

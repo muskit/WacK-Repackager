@@ -1,5 +1,5 @@
 # Preparing files
-This is a guide to populating the `data` folder, which will eventually contain all relevant data for repacking WACCA charts.
+This is a guide to populating the `data` folder in this project directory, which will eventually contain all relevant data for repacking WACCA charts. You may set up this folder elsewhere for storage space reasons; the app will let you choose a different working folder path. We will refer to this working folder as `data` throughout the guide.
 
 **This project will only repack audio on Reverse 3.07 properly.**
 
@@ -37,7 +37,7 @@ For each of the files below located in `<WACCA>/app/WindowsNoEditor/Mercury/Cont
 - MER_BGM_V3_06.awb
 - MER_BGM_V3_07.awb
 
-...follow these directions on each file:
+...follow these steps on each file:
 
 1. Load the file in ACE using `File > Load (AWB)`.
     - If asked to open the matching ACB, click "No."

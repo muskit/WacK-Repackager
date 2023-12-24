@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.ttk import *
+from tkinter import messagebox
 
 import config
 
@@ -83,6 +84,10 @@ class MainWindow(Tk):
         if not config.cfg_file_loaded:
             print("First time opening!")
             self.__show_welcome()
+            # open data_setup WITH folder picker
+        else:
+            # open data_setup WITHOUT folder picker
+            pass
 
     def __show_welcome(self):
         welcome = WelcomeWindow(self)

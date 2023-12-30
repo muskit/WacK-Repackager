@@ -1,3 +1,10 @@
+from __future__ import annotations
+from datetime import datetime
+from threading import Thread
+from collections import deque
+from queue import Queue, Empty
+import traceback
+from typing import Callable
 from random import randint
 from enum import Enum
 
@@ -6,6 +13,7 @@ from tkinter.ttk import *
 from PIL import Image, ImageTk
 
 import config
+from data import database
 
 
 class TaskState(Enum):
@@ -61,22 +69,91 @@ class ProgressIcon(Frame):
         self.after(100, lambda: self.loop((progress_counter + 1) % 12))
 
 
-class SetupProgress(Frame):
-    def __init__(self, master, name: str = None, task=None):
+class TaskProgress(Frame):
+    def __init__(
+        self,
+        master,
+        name: str = None,
+        task: Callable[[TaskProgress], None] = None,
+        log: Callable[[str], None] = None,
+    ):
         super().__init__(master)
+        self.name = name
+        self.task = task
+        self.__log_func = log
+        self.event_queue = Queue()
+
         self.pack(fill="x")
-        self.__init_widgets(name)
+        self.__init_widgets()
+        self.after(1, self.__event_queue_process)
 
-    def __init_widgets(self, name):
-        Label(self, text=name).pack(side="left")
+    def __init_widgets(self):
+        Label(self, text=self.name).pack(side="left")
 
-        ProgressIcon(self, init_status=TaskState(randint(0, 3))).pack(side="right")
+        self.prg_icn = ProgressIcon(self)
+        self.prg_icn.pack(side="right")
 
-        pb = Progressbar(
-            self, mode="indeterminate", orient=HORIZONTAL, maximum=90, length=200
+        self.p_bar_val = IntVar()
+        self.p_bar = Progressbar(
+            self,
+            mode="indeterminate",
+            orient=HORIZONTAL,
+            maximum=90,
+            length=200,
+            variable=self.p_bar_val,
         )
-        pb.pack(side="right", padx=(60, 12))
-        pb.start(15)
+        self.p_bar.pack(side="right", padx=(60, 12))
+        self.p_bar.start(15)
+
+    def __event_queue_process(self):
+        try:
+            msg = self.event_queue.get_nowait()
+            match msg[0]:
+                case "p_bar":
+                    self.__set_progress(msg[1], msg[2], msg[3], msg[4])
+                case "state":
+                    self.__set_status(msg[1])
+                case "log":
+                    self.__log_func(f"[{self.name}] {msg[1]}")
+        except Empty:
+            pass
+
+        self.after(1, self.__event_queue_process)
+
+    def __set_progress(
+        self, step: int = None, prog: int = None, maximum: int = None, stop_anim=False
+    ):
+        if maximum is not None:
+            self.p_bar["max"] = maximum
+
+        if step is None and prog is None:
+            self.p_bar["mode"] = "indeterminate"
+            self.p_bar.start(15) if not stop_anim else self.p_bar.stop()
+        else:
+            self.p_bar.stop()
+            self.p_bar["mode"] = "determinate"
+
+            if prog is not None:
+                self.p_bar_val.set(prog)
+
+            if step is not None:
+                self.p_bar.step(step)
+
+    def __set_status(self, status: TaskState = None):
+        self.prg_icn.mode = status
+
+    # ENQUEUE EVENTS FOR GUI UPDATE (__event_queue_process)
+    def enqueue_status(self, status: TaskState):
+        self.event_queue.put_nowait(("state", status))
+
+    def enqueue_progress_bar(
+        self, step: int = None, prog: int = None, maximum: int = None, stop_anim=False
+    ):
+        self.event_queue.put_nowait(("p_bar", step, prog, maximum, stop_anim))
+
+    def enqueue_log(self, msg):
+        # DataSetupWindow has logging queue
+        self.__log_func(f"[{self.name}] {msg}")
 
 
 class DataSetupWindow(Toplevel):
@@ -84,13 +161,16 @@ class DataSetupWindow(Toplevel):
         super().__init__(master=master)
 
         self.title("Data Setup")
-        self.geometry("500x250")
+        self.geometry("500x500")
         self.resizable(False, False)
 
         self.str_path = StringVar(self, config.working_path)
         self.str_path.trace_add("write", self.__action_path_change)
+        self.tasks: deque[TaskProgress] = deque(maxlen=5)
 
+        self.log_queue = Queue()
         self.__init_widgets()
+        self.reset_tasks()
 
     def __init_widgets(self):
         # Path Field
@@ -102,13 +182,80 @@ class DataSetupWindow(Toplevel):
         path_container.pack(pady=(3, 0))
 
         # Progress
-        progress_container = Frame(self)
-        progress_container.pack(expand=True)
-        SetupProgress(progress_container, "Metadata").pack()
-        SetupProgress(progress_container, "Charts").pack()
-        SetupProgress(progress_container, "Audio").pack()
-        SetupProgress(progress_container, "Jackets").pack()
-        SetupProgress(progress_container, "Videos").pack()
+        self.progress_container = Frame(self)
+        self.progress_container.pack(expand=True, side="top", anchor="n", pady=20)
+
+        Button(self, text="Rescan", command=self.reset_tasks).pack(pady=(0, 10))
+
+        # Log window
+        self.log_win = Text(self)
+        self.log_win["state"] = "disabled"
+        self.log_win.pack(padx=20, pady=(0, 20))
+        self.after(10, self.__queue_log_process)
+
+    def __queue_log_process(self):
+        try:
+            msg = self.log_queue.get_nowait()
+            self.__log(msg)
+        except Empty:
+            pass
+
+        self.after(8, self.__queue_log_process)
+
+    def __log(self, msg: str):
+        self.log_win["state"] = "normal"
+        self.log_win.insert("end", f"{msg}\n")
+        self.log_win["state"] = "disabled"
 
     def __action_path_change(self):
         pass
+
+    def log(self, msg: str):
+        self.log_queue.put_nowait(msg)
+
+    def reset_tasks(self):
+        while len(self.tasks) > 0:
+            self.tasks.pop().destroy()
+
+        t_md = TaskProgress(
+            self.progress_container,
+            "Metadata & Charts",
+            database.init_songs,
+            self.log,
+        )
+        t_md.pack()
+        self.tasks.append(t_md)
+
+        t_a = TaskProgress(
+            self.progress_container, "Audio", database.init_audio, self.log
+        )
+        t_a.pack()
+        self.tasks.append(t_a)
+
+        t_j = TaskProgress(
+            self.progress_container, "Jackets", database.init_jackets_task, self.log
+        )
+        t_j.pack()
+        self.tasks.append(t_j)
+
+        t_v = TaskProgress(self.progress_container, "Videos", lambda x: None, self.log)
+        t_v.pack()
+        self.tasks.append(t_v)
+
+        self.run_tasks()
+
+    def run_tasks(self):
+        t = Thread(target=self.__tasks_thread)
+        t.start()
+
+    def __tasks_thread(self):
+        self.log(f"Beginning scan at {datetime.now()}")  # TODO
+        try:
+            for t in self.tasks:
+                t.task(t)
+        except:
+            for t in self.tasks:
+                t.enqueue_progress_bar(stop_anim=True)
+            self.log(f"{traceback.format_exc()}\nAborting.")
+
+        self.log("")

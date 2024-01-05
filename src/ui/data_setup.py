@@ -107,14 +107,15 @@ class TaskProgress(Frame):
 
     def __event_queue_process(self):
         try:
-            msg = self.event_queue.get_nowait()
-            match msg[0]:
-                case "p_bar":
-                    self.__set_progress(msg[1], msg[2], msg[3], msg[4])
-                case "state":
-                    self.__set_status(msg[1])
-                case "log":
-                    self.__log_func(f"[{self.name}] {msg[1]}")
+            while True:
+                msg = self.event_queue.get_nowait()
+                match msg[0]:
+                    case "p_bar":
+                        self.__set_progress(msg[1], msg[2], msg[3], msg[4])
+                    case "state":
+                        self.__set_status(msg[1])
+                    case "log":
+                        self.__log_func(f"[{self.name}] {msg[1]}")
         except Empty:
             pass
 
@@ -195,8 +196,9 @@ class DataSetupWindow(Toplevel):
 
     def __queue_log_process(self):
         try:
-            msg = self.log_queue.get_nowait()
-            self.__log(msg)
+            while True:
+                msg = self.log_queue.get_nowait()
+                self.__log(msg)
         except Empty:
             pass
 

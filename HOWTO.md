@@ -1,5 +1,5 @@
 # Preparing files
-This is a guide to populating the `data` folder in this project directory, which will eventually contain all relevant data for repacking WACCA charts. You may set up this folder elsewhere for storage space reasons; the app will let you choose a different working folder path. We will refer to this working folder as `data` throughout the guide.
+This is a guide to populating the `data` working folder in this project's directory, which will eventually contain all relevant data for repacking WACCA charts. You may set up this folder elsewhere for storage space reasons; the app will let you choose a different working folder path. We will refer to this working folder as `data` throughout the guide.
 
 **This project will only repack audio on Reverse 3.07 properly.**
 
@@ -55,4 +55,12 @@ For each of the files below located in `<WACCA>/app/WindowsNoEditor/Mercury/Cont
 | MER_BGM_V3_07.awb | 07                |
 
 ## Jackets
-For the moment, this process pulls jackets available from WACCA's song listings website. This unfortunately means that some songs may not have a jacket.
+For this, you will need [Unreal Engine resource viewer](https://www.gildor.org/en/projects/umodel)
+
+1. Run `umodel_64.exe` and configure its Startup Options.
+    - Set "Path to game files" to `<WACCA>/app/WindowsNoEditor/Mercury/Content/UI/Textures/JACKET`.
+    - Enable "Override game detection" and set it to "Unreal engine 4.19."
+    - Click OK.
+2. In the left panel, right click on "All packages," then click on "Export folder content."
+    - Under "Texture Export," set format to PNG, and the path to `data/jackets`.
+    - Click OK to begin exporting jacket images.

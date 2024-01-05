@@ -31,17 +31,17 @@ class MainWindow(Tk):
         self.title("WacK Repackager")
         self.geometry("800x600")
         self.protocol("WM_DELETE_WINDOW", self.__exit)  # upon closing the window (X)
+
         self.__init_widgets()
-        self.__post_init()
+        self.center_to_screen()
+        self.after(100, self.__try_welcome)
 
     def __init_widgets(self):
         # menu bar
         menu_bar = Menu(self)
 
         file_menu = Menu(menu_bar, tearoff=0)
-        file_menu.add_command(
-            label="Change working folder...", command=self.show_data_setup
-        )
+        file_menu.add_command(label="Data Setup...", command=self.show_data_setup)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.__exit)
         menu_bar.add_cascade(label="File", menu=file_menu)
@@ -61,13 +61,12 @@ class MainWindow(Tk):
         tabbed = MainWidget(self)
         tabbed.pack(expand=1, fill="both")
 
-    def __post_init(self):
-        self.center_to_screen()
+    def __try_welcome(self):
         if not config.cfg_file_loaded:
             self.show_and_focus_toplevel(WelcomeWindow)
-            self.show_data_setup(True)
+            self.show_data_setup(show_picker=True)
         else:
-            self.show_data_setup(False)
+            self.show_data_setup(show_picker=False)
 
     def center_to_screen(self):
         """Center window to screen."""

@@ -10,7 +10,6 @@ def main():
     print("============== WacK Repackager ==============")
     config.load()
     ui_main()
-    # database.init()  # TODO: split into GUI tasks
 
 
 if __name__ == "__main__":

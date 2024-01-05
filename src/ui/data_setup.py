@@ -4,7 +4,7 @@ from threading import Thread
 from collections import deque
 from queue import Queue, Empty
 import traceback
-from typing import Callable
+from typing import Any, Callable
 from random import randint
 from enum import Enum
 
@@ -158,7 +158,7 @@ class TaskProgress(Frame):
 
 
 class DataSetupWindow(Toplevel):
-    def __init__(self, master, init_mode=False):
+    def __init__(self, master, file_picker_init=False):
         super().__init__(master=master)
 
         self.title("Data Setup")
@@ -167,9 +167,11 @@ class DataSetupWindow(Toplevel):
 
         self.str_path = StringVar(self, config.working_path)
         self.str_path.trace_add("write", self.__action_path_change)
-        self.tasks: deque[TaskProgress] = deque(maxlen=5)
 
-        self.log_queue = Queue()
+        self.__tasks: deque[TaskProgress] = deque(maxlen=5)
+        self.__cur_tasks_thread: Thread = None
+
+        self.event_queue: Queue[tuple[str, Any]] = Queue()
         self.__init_widgets()
         self.reset_tasks()
 
@@ -186,25 +188,31 @@ class DataSetupWindow(Toplevel):
         self.progress_container = Frame(self)
         self.progress_container.pack(expand=True, side="top", anchor="n", pady=20)
 
-        Button(self, text="Rescan", command=self.reset_tasks).pack(pady=(0, 10))
+        self.__btn_rescan = Button(self, text="Rescan", command=self.reset_tasks)
+        self.__btn_rescan.pack(pady=(0, 10))
 
         # Log window
         self.log_win = Text(self)
         self.log_win["state"] = "disabled"
         self.log_win.pack(padx=20, pady=(0, 20))
-        self.after(10, self.__queue_log_process)
+        self.after(10, self.__event_queue_process)
 
-    def __queue_log_process(self):
+    def __event_queue_process(self):
         try:
             while True:
-                msg = self.log_queue.get_nowait()
-                self.__log(msg)
+                msg = self.event_queue.get_nowait()
+                match msg[0]:
+                    case "rescannable":
+                        # msg[1] should be one of ["normal", "disabled"]
+                        self.__btn_rescan["state"] = msg[1]
+                    case "log":
+                        self.__log_insert(msg[1])
         except Empty:
             pass
 
-        self.after(8, self.__queue_log_process)
+        self.after(10, self.__event_queue_process)
 
-    def __log(self, msg: str):
+    def __log_insert(self, msg: str):
         self.log_win["state"] = "normal"
         self.log_win.insert("end", f"{msg}\n")
         self.log_win["state"] = "disabled"
@@ -213,11 +221,11 @@ class DataSetupWindow(Toplevel):
         pass
 
     def log(self, msg: str):
-        self.log_queue.put_nowait(msg)
+        self.event_queue.put_nowait(("log", msg))
 
     def reset_tasks(self):
-        while len(self.tasks) > 0:
-            self.tasks.pop().destroy()
+        while len(self.__tasks) > 0:
+            self.__tasks.pop().destroy()
 
         t_md = TaskProgress(
             self.progress_container,
@@ -226,38 +234,51 @@ class DataSetupWindow(Toplevel):
             self.log,
         )
         t_md.pack()
-        self.tasks.append(t_md)
+        self.__tasks.append(t_md)
 
         t_a = TaskProgress(
             self.progress_container, "Audio", database.init_audio, self.log
         )
         t_a.pack()
-        self.tasks.append(t_a)
+        self.__tasks.append(t_a)
 
         t_j = TaskProgress(
             self.progress_container, "Jackets", database.init_jackets_task, self.log
         )
         t_j.pack()
-        self.tasks.append(t_j)
+        self.__tasks.append(t_j)
 
-        t_v = TaskProgress(self.progress_container, "Videos", lambda x: None, self.log)
+        t_v = TaskProgress(
+            self.progress_container,
+            "Videos",
+            database.init_videos_task,
+            self.log,
+        )
         t_v.pack()
-        self.tasks.append(t_v)
+        self.__tasks.append(t_v)
 
-        self.run_tasks()
+        self.start_tasks()
 
-    def run_tasks(self):
-        t = Thread(target=self.__tasks_thread)
-        t.start()
+    def start_tasks(self):
+        """Tasks thread starter"""
+
+        if self.__cur_tasks_thread is not None:
+            self.__cur_tasks_thread.join()
+        self.__cur_tasks_thread = Thread(target=self.__tasks_thread)
+
+        self.event_queue.put_nowait(("rescannable", "disabled"))
+        self.__cur_tasks_thread.start()
 
     def __tasks_thread(self):
         self.log(f"Beginning scan at {datetime.now()}")  # TODO
         try:
-            for t in self.tasks:
+            for t in self.__tasks:
                 t.task(t)
         except:
-            for t in self.tasks:
+            for t in self.__tasks:
                 t.enqueue_progress_bar(stop_anim=True)
-            self.log(f"{traceback.format_exc()}\nAborting.")
+            self.log(f"ERROR:\n{traceback.format_exc()}\n\nAborting.")
 
         self.log("")
+        print("Tasks thread finished")
+        self.event_queue.put_nowait(("rescannable", "normal"))

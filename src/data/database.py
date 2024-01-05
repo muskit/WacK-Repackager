@@ -201,6 +201,7 @@ def init_songs(progress: TaskProgress):
                 ):
                     diff.video_id = background_video[0]
                 difficulties[i] = diff
+
             metadata[id] = SongMetadata(
                 id=id,
                 name=name,
@@ -272,6 +273,9 @@ def init_audio(progress: TaskProgress):
 # TODO
 def init_jackets_task(progress: TaskProgress):
     jackets_dir = f"{config.working_path}/jackets"
+    print(f"Searching for jackets in {jackets_dir}...")
+    progress.enqueue_log("TODO")
+
     progress.enqueue_progress_bar(prog=0, maximum=len(metadata))
 
     jacket_file.clear()
@@ -288,6 +292,11 @@ def init_jackets_task(progress: TaskProgress):
             TaskState.Alert if len(jacket_file) < len(metadata) else TaskState.Complete
         )
         progress.enqueue_log(f"Found {len(jacket_file)}/{len(metadata)} jacket files.")
+
+
+# TODO
+def init_videos_task(progress: TaskProgress):
+    progress.enqueue_log("TODO")
 
 
 def _populate_missing():

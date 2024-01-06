@@ -166,9 +166,11 @@ class DataSetupWindow(Toplevel):
 
         self.str_path = StringVar(self, config.working_path)
         self.str_path.trace_add("write", self.__action_path_change)
+        self.protocol("WM_DELETE_WINDOW", self.__action_close)
 
         self.__tasks: deque[TaskProgress] = deque(maxlen=5)
         self.__cur_tasks_thread: Thread = None
+        self.__working = False
 
         self.event_queue: Queue[tuple[str, Any]] = Queue()
         self.__init_widgets()
@@ -201,10 +203,16 @@ class DataSetupWindow(Toplevel):
             while True:
                 msg = self.event_queue.get_nowait()
                 match msg[0]:
-                    case "rescannable":
-                        # msg[1] should be one of ["normal", "disabled"]
-                        self.__btn_rescan["state"] = msg[1]
+                    case "working":
+                        # msg[1] is bool
+                        self.__working = msg[1]
+
+                        if self.__working:
+                            self.__btn_rescan["state"] = "disabled"
+                        else:
+                            self.__btn_rescan["state"] = "normal"
                     case "log":
+                        # msg[1] is str
                         self.__log_insert(msg[1])
         except Empty:
             pass
@@ -218,6 +226,10 @@ class DataSetupWindow(Toplevel):
 
     def __action_path_change(self):
         pass
+
+    def __action_close(self):
+        if not self.__working:
+            self.destroy()
 
     def log(self, msg: str):
         self.event_queue.put_nowait(("log", msg))
@@ -256,7 +268,7 @@ class DataSetupWindow(Toplevel):
             self.__cur_tasks_thread.join()
         self.__cur_tasks_thread = Thread(target=self.__tasks_thread)
 
-        self.event_queue.put_nowait(("rescannable", "disabled"))
+        self.event_queue.put_nowait(("working", True))
         self.__cur_tasks_thread.start()
 
     def __tasks_thread(self):
@@ -273,4 +285,4 @@ class DataSetupWindow(Toplevel):
 
         self.log("")
         print("Tasks thread finished")
-        self.event_queue.put_nowait(("rescannable", "normal"))
+        self.event_queue.put_nowait(("working", False))

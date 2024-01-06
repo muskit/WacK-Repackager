@@ -6,9 +6,9 @@ This is a guide to populating the `data` working folder in this project's direct
 ## Table of Contents
 1. [Metadata](#metadata-datametadatajson)
 2. [Charts](#charts-datamusicdata)
-3. [Song Audio](#song-audio-datamer_bgm)
-4. [Jackets](#jackets)
-4. [Videos](#videos)
+3. [Videos](#videos-long)
+4. [Song Audio](#song-audio-datamer_bgm)
+5. [Jackets](#jackets)
 
 ## Metadata (`data/metadata.json`)
 1. Grab the latest [UAssetGUI](https://github.com/atenfyr/UAssetGUI).
@@ -20,6 +20,15 @@ We're done with UAssetGUI now. Feel free to close it.
 
 ## Charts (`data/MusicData`)
 Simply copy the `<WACCA>/app/WindowsNoEditor/Mercury/Content/MusicData` folder into `data`.
+
+## Videos (LONG)
+You will need [ffmpeg](https://www.ffmpeg.org/download.html) installed and on PATH.
+
+1. Set the paths in `convert-videos.bat` as needed:
+    - `video_path` to the folder which contains .usm video files
+    - `export_path` to `data/movies`
+2. Run `convert-videos.bat` to convert all .usm videos to .mp4 in your working folder.
+    - This script will take a **very** long time to finish. I recommend running this in the background while you proceed to the next sections.
 
 ## Song Audio (`data/MER_BGM`)
 Due to the audio indexing data in this project only done for **Reverse 3.07**, these steps will only work for game files of that version.

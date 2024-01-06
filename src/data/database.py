@@ -7,7 +7,7 @@ from typing import Callable
 import config
 from ui.data_setup import TaskProgress, TaskState
 from util import awb_index, song_id_from_int
-from .metadata import Difficulty, SongMetadata
+from .metadata import Difficulty, DifficultyName, SongMetadata
 
 ## NOTE: ID KEYS ARE HYPHENATED
 ## S03-014, not S03_014
@@ -47,8 +47,9 @@ missing_jackets: list[str] = list()
 
 
 def init_songs(progress: TaskProgress):
-    jackets_dir = os.path.join(config.working_path, "jackets")
     metadata_path = os.path.join(config.working_path, "metadata.json")
+    videos_dir = os.path.join(config.working_path, "movies")
+    jackets_dir = os.path.join(config.working_path, "jackets")
     print(f"Initializing charts metadata from {metadata_path}...")
 
     metadata.clear()
@@ -159,6 +160,20 @@ def init_songs(progress: TaskProgress):
                 # print('Skipping system song...')
                 continue
 
+            # check for existence of video file
+            for i, f in enumerate(background_video):
+                if f is not None:
+                    file = f"{f}.mp4"
+                    path = os.path.join(os.path.join(videos_dir, file))
+                    if not os.path.exists(path):
+                        progress.enqueue_log(
+                            f"WARNING: Could not find video file for {id} ({DifficultyName(i)})!"
+                        )
+                        progress.enqueue_log(f"    {path}")
+                        background_video[i] = None
+                    else:
+                        background_video[i] = os.path.join(videos_dir, f)
+
             # mer difficulty-audio IDs
             mer_dir = f"{config.working_path}/MusicData/{id}"
             for jacket_root, _, files in os.walk(f"{mer_dir}"):
@@ -191,7 +206,7 @@ def init_songs(progress: TaskProgress):
                     audio_offset=audio[1],
                     audio_preview_time=audio_preview,
                     audio_preview_length=audio_preview_len,
-                    video_id=background_video[i],
+                    video=background_video[i],
                     designer=level_designer[i],
                     clearRequirement=level_clear_requirements[i],
                     diffLevel=levels[i],
@@ -202,7 +217,7 @@ def init_songs(progress: TaskProgress):
                     and background_video[i] is None
                     and background_video[0] is not None
                 ):
-                    diff.video_id = background_video[0]
+                    diff.video = background_video[0]
                 difficulties[i] = diff
 
             # jacket path to png
@@ -277,9 +292,9 @@ def __init_audio_paths(progress: TaskProgress):
     for k, v in audio_index.items():
         if v is None:
             progress.enqueue_log(f"WARNING: audio ID {k} has no cue index!!")
-            if k in metadata:
-                progress.enqueue_log(f"    {metadata[k].name} - {metadata[k].artist}")
-            progress.enqueue_log(f"    This ID will have no sound!")
+            # if k in metadata:
+            #     progress.enqueue_log(f"    {metadata[k].name} - {metadata[k].artist}")
+            progress.enqueue_log(f"    This audio ID will have no sound!")
             continue
 
         f = os.path.join(audio_dir, v[0], f"{v[1]}.wav")
@@ -322,17 +337,11 @@ def jackets_progress_task(progress: TaskProgress):
         if metadata[k].jacket is not None:
             jackets_present += 1
 
+    progress.enqueue_progress_bar(prog=jackets_present, maximum=len(metadata))
+    progress.enqueue_log(f"Found {jackets_present}/{len(metadata)} jackets.")
     progress.enqueue_status(
         TaskState.Alert if jackets_present < len(metadata) else TaskState.Complete
     )
-
-    progress.enqueue_progress_bar(prog=jackets_present, maximum=len(metadata))
-    progress.enqueue_log(f"Found {jackets_present}/{len(metadata)} jackets.")
-
-
-# TODO
-def videos_progress_task(progress: TaskProgress):
-    progress.enqueue_log("TODO")
 
 
 def _populate_missing():

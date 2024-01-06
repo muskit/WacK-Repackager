@@ -1,6 +1,6 @@
 @echo off
 
-:: Set paths first before running!!!
+:: Set paths here first before running!!!
 set video_path="\app\WindowsNoEditor\Mercury\Content\Movie"
 set export_path=".\data\movies"
 

@@ -227,7 +227,7 @@ class DataSetupWindow(Toplevel):
 
         t_md = TaskProgress(
             self.progress_container,
-            "Metadata & Charts",
+            "Metadata",
             database.init_songs,
             self.log,
         )
@@ -245,15 +245,6 @@ class DataSetupWindow(Toplevel):
         )
         t_j.pack()
         self.__tasks.append(t_j)
-
-        t_v = TaskProgress(
-            self.progress_container,
-            "Videos",
-            database.videos_progress_task,
-            self.log,
-        )
-        t_v.pack()
-        self.__tasks.append(t_v)
 
         self.start_tasks()
 

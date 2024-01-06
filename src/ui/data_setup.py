@@ -9,6 +9,7 @@ from random import randint
 from enum import Enum
 
 from tkinter import *
+from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import *
 from PIL import Image, ImageTk
 
@@ -97,10 +98,10 @@ class TaskProgress(Frame):
             mode="indeterminate",
             orient=HORIZONTAL,
             maximum=90,
-            length=200,
+            length=250,
             variable=self.p_bar_val,
         )
-        self.p_bar.pack(side="right", padx=(60, 12))
+        self.p_bar.pack(side="right", padx=(40, 12))
         self.p_bar.start(15)
 
     def __event_queue_process(self):
@@ -184,13 +185,13 @@ class DataSetupWindow(Toplevel):
 
         # Progress
         self.progress_container = Frame(self)
-        self.progress_container.pack(expand=True, side="top", anchor="n", pady=20)
+        self.progress_container.pack(expand=True, side="top", anchor="n", pady=10)
 
         self.__btn_rescan = Button(self, text="Rescan", command=self.reset_tasks)
         self.__btn_rescan.pack(pady=(0, 10))
 
         # Log window
-        self.log_win = Text(self)
+        self.log_win = ScrolledText(self)
         self.log_win["state"] = "disabled"
         self.log_win.pack(padx=20, pady=(0, 20))
         self.after(10, self.__event_queue_process)
@@ -259,7 +260,9 @@ class DataSetupWindow(Toplevel):
         self.__cur_tasks_thread.start()
 
     def __tasks_thread(self):
-        self.log(f"Beginning scan at {datetime.now()}")  # TODO
+        self.log(
+            f"Beginning scan at {datetime.now().isoformat(sep=' ', timespec='seconds')}"
+        )
         try:
             for t in self.__tasks:
                 t.task(t)

@@ -47,7 +47,8 @@ missing_jackets: list[str] = list()
 
 
 def init_songs(progress: TaskProgress):
-    metadata_path = f"{config.working_path}/metadata.json"
+    jackets_dir = os.path.join(config.working_path, "jackets")
+    metadata_path = os.path.join(config.working_path, "metadata.json")
     print(f"Initializing charts metadata from {metadata_path}...")
 
     metadata.clear()
@@ -71,6 +72,7 @@ def init_songs(progress: TaskProgress):
             level_audio: list[str] = [None, None, None, None]  # from .mer
             level_designer: list[str] = [None, None, None, None]
             level_clear_requirements: list[str] = [None, None, None, None]
+            jacket_path: str = None
 
             # MusicParameterTable JSON parsing
             for key in elem["Value"]:  # properties of song
@@ -93,6 +95,8 @@ def init_songs(progress: TaskProgress):
                     copyright = key["Value"]
                 elif key["Name"] == "VersionNo":
                     version = key["Value"]
+                elif key["Name"] == "JacketAssetName":
+                    jacket_path = key["Value"]
                 # ChartInfo Levels; "+0" = no chart
                 elif key["Name"] == "DifficultyNormalLv":
                     levels[0] = key["Value"]
@@ -151,19 +155,18 @@ def init_songs(progress: TaskProgress):
                 ]:
                     background_video[3] = key["Value"]
 
-            # print(f'{id}: {name} - {artist}')
             if "S99" in id:
                 # print('Skipping system song...')
                 continue
 
             # mer difficulty-audio IDs
             mer_dir = f"{config.working_path}/MusicData/{id}"
-            for root, _, files in os.walk(f"{mer_dir}"):
+            for jacket_root, _, files in os.walk(f"{mer_dir}"):
                 for f in files:
                     diff_idx = int(re.search(r"\d\d.mer", f).group()[:2])
 
                     lines: list[str]
-                    with open(f"{root}/{f}", "r") as chf:
+                    with open(f"{jacket_root}/{f}", "r") as chf:
                         lines = chf.readlines()
                     a_id = None
                     offset = None
@@ -202,6 +205,20 @@ def init_songs(progress: TaskProgress):
                     diff.video_id = background_video[0]
                 difficulties[i] = diff
 
+            # jacket path to png
+            jacket_root = os.path.join(jackets_dir, *jacket_path.split("/"))
+            if os.path.isdir(jacket_root):
+                for f in os.listdir(jacket_root):
+                    if f.endswith(".png"):
+                        jacket_path = os.path.join(jacket_root, f)
+                        break
+            else:
+                jacket_path = f"{jacket_root}.png"
+
+            if jacket_path is None or not os.path.exists(jacket_path):
+                jacket_path = None
+                progress.enqueue_log(f"WARNING: Could not find jacket for {id}!")
+
             metadata[id] = SongMetadata(
                 id=id,
                 name=name,
@@ -211,6 +228,7 @@ def init_songs(progress: TaskProgress):
                 tempo=tempo,
                 version=version,
                 difficulties=difficulties,
+                jacket=jacket_path,
             )
     except Exception as e:
         progress.enqueue_log(f"FATAL: Error occurred!")
@@ -223,7 +241,7 @@ def init_songs(progress: TaskProgress):
 
 
 def __init_audio_index(progress: TaskProgress):
-    csv_path = "./awb.csv"
+    csv_path = os.path.abspath(os.path.join(os.path.curdir, "awb.csv"))
     print(f"Creating audio index from {csv_path}...")
 
     audio_index.clear()
@@ -241,21 +259,49 @@ def __init_audio_index(progress: TaskProgress):
 
 
 def __init_audio_paths(progress: TaskProgress):
-    audio_dir = f"{config.working_path}/MER_BGM"
+    audio_dir = os.path.join(config.working_path, "MER_BGM")
     print(f"Finding audio in {audio_dir}...")
 
+    # untouched files set to figure out which files weren't added
+    # used for trying to fix holes in awb.csv
+    untouched = set()
+
+    # populate with full-path wav files in audio_dir
+    for root, _, files in os.walk(audio_dir):
+        for f in files:
+            if "wav" in f:
+                untouched.add(os.path.join(root, f))
+
+    # populate audio_file with audio_index
     audio_file.clear()
     for k, v in audio_index.items():
         if v is None:
             progress.enqueue_log(f"WARNING: audio ID {k} has no cue index!!")
+            if k in metadata:
+                progress.enqueue_log(f"    {metadata[k].name} - {metadata[k].artist}")
+            progress.enqueue_log(f"    This ID will have no sound!")
             continue
-        f = f"{audio_dir}/{v[0]}/{v[1]}.wav"
+
+        f = os.path.join(audio_dir, v[0], f"{v[1]}.wav")
+        f_eq = os.path.join(audio_dir, v[0], f"{v[1]+1}.wav")
+
         if os.path.exists(f):
+            if audio_file.get(k) is not None:
+                progress.enqueue_log(
+                    f"WARNING: Duplicate audio ID {k}! Overwriting {audio_file[k]} with {f}"
+                )
+
             audio_file[k] = f
+            untouched.remove(f)
+            untouched.remove(f_eq)
             progress.enqueue_progress_bar(prog=len(audio_file))
         else:
             progress.enqueue_log(f"WARNING: Could not find audio for {k} ({f})!")
     progress.enqueue_log(f"Found {len(audio_file)}/{len(audio_index)} audio files.")
+
+    print(f"{len(untouched)} files weren't added:")
+    for f in sorted(untouched):
+        print(f"  {f}")
 
 
 def init_audio(progress: TaskProgress):
@@ -270,32 +316,22 @@ def init_audio(progress: TaskProgress):
     progress.enqueue_progress_bar(prog=len(audio_file))
 
 
-# TODO
-def init_jackets_task(progress: TaskProgress):
-    jackets_dir = f"{config.working_path}/jackets"
-    print(f"Searching for jackets in {jackets_dir}...")
-    progress.enqueue_log("TODO")
+def jackets_progress_task(progress: TaskProgress):
+    jackets_present = 0
+    for k in metadata:
+        if metadata[k].jacket is not None:
+            jackets_present += 1
 
-    progress.enqueue_progress_bar(prog=0, maximum=len(metadata))
+    progress.enqueue_status(
+        TaskState.Alert if jackets_present < len(metadata) else TaskState.Complete
+    )
 
-    jacket_file.clear()
-    for _, _, files in os.walk(jackets_dir):
-        for f in files:
-            m = re.search(r"S\d\d-\d\d\d", f)
-            if m is None:
-                continue
-            jacket_file[m.group()] = f
-            progress.enqueue_progress_bar(prog=len(jacket_file))
-
-    if len(jacket_file) < len(metadata):
-        progress.enqueue_status(
-            TaskState.Alert if len(jacket_file) < len(metadata) else TaskState.Complete
-        )
-        progress.enqueue_log(f"Found {len(jacket_file)}/{len(metadata)} jacket files.")
+    progress.enqueue_progress_bar(prog=jackets_present, maximum=len(metadata))
+    progress.enqueue_log(f"Found {jackets_present}/{len(metadata)} jackets.")
 
 
 # TODO
-def init_videos_task(progress: TaskProgress):
+def videos_progress_task(progress: TaskProgress):
     progress.enqueue_log("TODO")
 
 

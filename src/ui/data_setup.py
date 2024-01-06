@@ -24,8 +24,6 @@ class TaskState(Enum):
 
 
 class ProgressIcon(Frame):
-    SIZE = 20
-
     image = {
         "progress": [
             Image.open("../assets/indeterminate_spinner.png")
@@ -46,7 +44,7 @@ class ProgressIcon(Frame):
     }
 
     def __init__(self, master, init_status=TaskState.InProgress):
-        super().__init__(master, height=ProgressIcon.SIZE, width=ProgressIcon.SIZE)
+        super().__init__(master, height=20, width=20)
         self.mode = init_status
         self.label = Label(self)
         self.label.pack()
@@ -162,7 +160,7 @@ class DataSetupWindow(Toplevel):
         super().__init__(master=master)
 
         self.title("Data Setup")
-        self.geometry("500x500")
+        self.geometry("550x500")
         self.resizable(False, False)
 
         self.str_path = StringVar(self, config.working_path)
@@ -243,7 +241,7 @@ class DataSetupWindow(Toplevel):
         self.__tasks.append(t_a)
 
         t_j = TaskProgress(
-            self.progress_container, "Jackets", database.init_jackets_task, self.log
+            self.progress_container, "Jackets", database.jackets_progress_task, self.log
         )
         t_j.pack()
         self.__tasks.append(t_j)
@@ -251,7 +249,7 @@ class DataSetupWindow(Toplevel):
         t_v = TaskProgress(
             self.progress_container,
             "Videos",
-            database.init_videos_task,
+            database.videos_progress_task,
             self.log,
         )
         t_v.pack()

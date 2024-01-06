@@ -59,3 +59,4 @@ class SongMetadata:
     tempo: str
     version: int
     difficulties: list[Difficulty | None] = field(default_factory=list)
+    jacket: str = None

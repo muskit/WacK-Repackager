@@ -13,6 +13,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # Assume app is being run via a script at the project root.
-    os.chdir("..")
+    # Assume app is being run at the project root.
     main()

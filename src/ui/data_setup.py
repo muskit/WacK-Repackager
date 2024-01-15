@@ -7,6 +7,7 @@ import traceback
 from typing import Any, Callable
 from random import randint
 from enum import Enum
+import os
 
 from tkinter import *
 from tkinter.scrolledtext import ScrolledText
@@ -27,21 +28,17 @@ class TaskState(Enum):
 class ProgressIcon(Frame):
     image = {
         "progress": [
-            Image.open("../assets/indeterminate_spinner.png")
+            Image.open("./assets/indeterminate_spinner.png")
             .convert("RGBA")
             .rotate(360 * (-i / 12))
             .resize((20, 20))
             for i in range(12)
         ],
-        "complete": Image.open("../assets/task_complete.png")
+        "complete": Image.open("./assets/task_complete.png")
         .convert("RGBA")
         .resize((20, 20)),
-        "alert": Image.open("../assets/task_alert.png")
-        .convert("RGBA")
-        .resize((20, 20)),
-        "error": Image.open("../assets/task_error.png")
-        .convert("RGBA")
-        .resize((20, 20)),
+        "alert": Image.open("./assets/task_alert.png").convert("RGBA").resize((20, 20)),
+        "error": Image.open("./assets/task_error.png").convert("RGBA").resize((20, 20)),
     }
 
     def __init__(self, master, init_status=TaskState.InProgress):
@@ -165,7 +162,7 @@ class DataSetupWindow(Toplevel):
         self.resizable(False, False)
 
         self.str_path = StringVar(self, config.working_path)
-        self.str_path.trace_add("write", self.__action_path_change)
+        # self.str_path.trace_add("write", self.__action_path_change)
         self.protocol("WM_DELETE_WINDOW", self.__action_close)
 
         self.__tasks: deque[TaskProgress] = deque(maxlen=5)
@@ -223,6 +220,7 @@ class DataSetupWindow(Toplevel):
         self.log_win["state"] = "normal"
         self.log_win.insert("end", f"{msg}\n")
         self.log_win["state"] = "disabled"
+        self.log_win.see("end")
 
     def __action_path_change(self):
         pass
@@ -237,6 +235,10 @@ class DataSetupWindow(Toplevel):
     def reset_tasks(self):
         while len(self.__tasks) > 0:
             self.__tasks.pop().destroy()
+
+        if os.path.isdir(self.str_path.get()):
+            self.str_path.set(os.path.abspath(self.str_path.get()))
+            config.working_path = self.str_path.get()
 
         t_md = TaskProgress(
             self.progress_container,

@@ -17,6 +17,7 @@ from PIL import Image, ImageTk
 
 import config
 from data import database
+from .tabs.listing import ListingTab
 
 
 class TaskState(Enum):
@@ -208,14 +209,19 @@ class DataSetupWindow(Toplevel):
                         # msg[1] is bool
                         self.__working = msg[1]
 
-                        if self.__working:
+                        if self.__working:  # tasks just started
+                            # disable widgets
                             self.__btn_rescan["state"] = "disabled"
                             self.__entry_path["state"] = "disabled"
                             self.__btn_browse["state"] = "disabled"
-                        else:
+                        else:  # tasks just finished
+                            # enable widgets
                             self.__btn_rescan["state"] = "normal"
                             self.__entry_path["state"] = "normal"
                             self.__btn_browse["state"] = "normal"
+
+                            # update table
+                            ListingTab.instance.table_populate(database.metadata)
                     case "log":
                         # msg[1] is str
                         self.__log_insert(msg[1])

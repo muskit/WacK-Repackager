@@ -29,7 +29,7 @@ class MainWindow(Tk):
     def __init__(self):
         super().__init__()
         self.title("WacK Repackager")
-        self.geometry("800x600")
+        self.geometry("1024x600")
         self.protocol("WM_DELETE_WINDOW", self.__exit)  # upon closing the window (X)
 
         self.__init_widgets()

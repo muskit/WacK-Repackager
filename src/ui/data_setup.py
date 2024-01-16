@@ -10,6 +10,7 @@ from enum import Enum
 import os
 
 from tkinter import *
+from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import *
 from PIL import Image, ImageTk
@@ -140,15 +141,15 @@ class TaskProgress(Frame):
         self.prg_icn.mode = status
 
     # ENQUEUE EVENTS FOR GUI UPDATE (__event_queue_process)
-    def enqueue_status(self, status: TaskState):
+    def status_set(self, status: TaskState):
         self.event_queue.put_nowait(("state", status))
 
-    def enqueue_progress_bar(
+    def pbar_set(
         self, step: int = None, prog: int = None, maximum: int = None, stop_anim=False
     ):
         self.event_queue.put_nowait(("p_bar", step, prog, maximum, stop_anim))
 
-    def enqueue_log(self, msg):
+    def log(self, msg):
         # DataSetupWindow has logging queue
         self.__log_func(f"[{self.name}] {msg}")
 
@@ -162,7 +163,7 @@ class DataSetupWindow(Toplevel):
         self.resizable(False, False)
 
         self.str_path = StringVar(self, config.working_path)
-        # self.str_path.trace_add("write", self.__action_path_change)
+        self.str_path.trace_add("write", self.__action_path_change)
         self.protocol("WM_DELETE_WINDOW", self.__action_close)
 
         self.__tasks: deque[TaskProgress] = deque(maxlen=5)
@@ -177,22 +178,25 @@ class DataSetupWindow(Toplevel):
         # Path Field
         path_container = Frame(self)
         Label(path_container, text="Working Folder Path:").pack(anchor="w")
-        self.entry_path = Entry(path_container, width=67, textvariable=self.str_path)
-        self.entry_path.pack(side=LEFT)
-        Button(path_container, text="Browse", command=None).pack(side=LEFT)
+        self.__entry_path = Entry(path_container, width=67, textvariable=self.str_path)
+        self.__entry_path.pack(side=LEFT)
+        self.__btn_browse = Button(
+            path_container, text="Browse", command=self.__action_dirpicker
+        )
+        self.__btn_browse.pack(side=LEFT)
         path_container.pack(pady=(3, 0))
 
         # Progress
-        self.progress_container = Frame(self)
-        self.progress_container.pack(expand=True, side="top", anchor="n", pady=10)
+        self.__progress_container = Frame(self)
+        self.__progress_container.pack(expand=True, side="top", anchor="n", pady=10)
 
         self.__btn_rescan = Button(self, text="Rescan", command=self.reset_tasks)
         self.__btn_rescan.pack(pady=(0, 10))
 
         # Log window
-        self.log_win = ScrolledText(self)
-        self.log_win["state"] = "disabled"
-        self.log_win.pack(padx=20, pady=(0, 20))
+        self.__log_win = ScrolledText(self)
+        self.__log_win["state"] = "disabled"
+        self.__log_win.pack(padx=20, pady=(0, 20))
         self.after(10, self.__event_queue_process)
 
     def __event_queue_process(self):
@@ -206,8 +210,12 @@ class DataSetupWindow(Toplevel):
 
                         if self.__working:
                             self.__btn_rescan["state"] = "disabled"
+                            self.__entry_path["state"] = "disabled"
+                            self.__btn_browse["state"] = "disabled"
                         else:
                             self.__btn_rescan["state"] = "normal"
+                            self.__entry_path["state"] = "normal"
+                            self.__btn_browse["state"] = "normal"
                     case "log":
                         # msg[1] is str
                         self.__log_insert(msg[1])
@@ -217,17 +225,24 @@ class DataSetupWindow(Toplevel):
         self.after(10, self.__event_queue_process)
 
     def __log_insert(self, msg: str):
-        self.log_win["state"] = "normal"
-        self.log_win.insert("end", f"{msg}\n")
-        self.log_win["state"] = "disabled"
-        self.log_win.see("end")
+        self.__log_win["state"] = "normal"
+        self.__log_win.insert("end", f"{msg}\n")
+        self.__log_win["state"] = "disabled"
+        self.__log_win.see("end")
 
-    def __action_path_change(self):
-        pass
+    def __action_path_change(self, a, b, c):
+        self.__btn_rescan["state"] = (
+            "normal" if os.path.isdir(self.str_path.get()) else "disabled"
+        )
 
     def __action_close(self):
         if not self.__working:
             self.destroy()
+
+    def __action_dirpicker(self):
+        result = filedialog.askdirectory(initialdir=config.working_path)
+        if result != "":
+            self.str_path.set(result)
 
     def log(self, msg: str):
         self.event_queue.put_nowait(("log", msg))
@@ -241,7 +256,7 @@ class DataSetupWindow(Toplevel):
             config.working_path = self.str_path.get()
 
         t_md = TaskProgress(
-            self.progress_container,
+            self.__progress_container,
             "Metadata",
             database.init_songs,
             self.log,
@@ -250,13 +265,16 @@ class DataSetupWindow(Toplevel):
         self.__tasks.append(t_md)
 
         t_a = TaskProgress(
-            self.progress_container, "Audio", database.init_audio, self.log
+            self.__progress_container, "Audio", database.init_audio, self.log
         )
         t_a.pack()
         self.__tasks.append(t_a)
 
         t_j = TaskProgress(
-            self.progress_container, "Jackets", database.jackets_progress_task, self.log
+            self.__progress_container,
+            "Jackets",
+            database.jackets_progress_task,
+            self.log,
         )
         t_j.pack()
         self.__tasks.append(t_j)
@@ -280,10 +298,10 @@ class DataSetupWindow(Toplevel):
         try:
             for t in self.__tasks:
                 t.task(t)
-        except:
+        except Exception as e:
             for t in self.__tasks:
-                t.enqueue_progress_bar(stop_anim=True)
-            self.log(f"ERROR:\n{traceback.format_exc()}\n\nAborting.")
+                t.pbar_set(stop_anim=True)
+            self.log(f"ERROR: {e}\n\nAborting.")
 
         self.log("")
         print("Tasks thread finished")

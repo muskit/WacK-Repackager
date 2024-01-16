@@ -106,5 +106,5 @@ class MainWindow(Tk):
 
     def __exit(self):
         print("exit event invoked!")
-        # config.save()
+        config.save()
         self.destroy()

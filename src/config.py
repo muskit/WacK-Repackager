@@ -44,5 +44,7 @@ def save():
     cfp.set("paths", "working_path", working_path)
     cfp.set("paths", "export_path", export_path)
 
+    print("Saving config file to", os.path.abspath(CONFIG_PATH))
     with open(CONFIG_PATH, "w") as f:
         cfp.write(f)
+    print("Saved successfully!")

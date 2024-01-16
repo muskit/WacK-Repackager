@@ -166,10 +166,10 @@ def init_songs(progress: TaskProgress):
                     file = f"{f}.mp4"
                     path = os.path.join(os.path.join(videos_dir, file))
                     if not os.path.exists(path):
-                        progress.enqueue_log(
+                        progress.log(
                             f"WARNING: Could not find video file for {id} ({DifficultyName(i)})!"
                         )
-                        progress.enqueue_log(f"    {path}")
+                        progress.log(f"    {path}")
                         background_video[i] = None
                     else:
                         background_video[i] = os.path.join(videos_dir, f)
@@ -232,7 +232,7 @@ def init_songs(progress: TaskProgress):
 
             if jacket_path is None or not os.path.exists(jacket_path):
                 jacket_path = None
-                progress.enqueue_log(f"WARNING: Could not find jacket for {id}!")
+                progress.log(f"WARNING: Could not find jacket for {id}!")
 
             metadata[id] = SongMetadata(
                 id=id,
@@ -246,13 +246,14 @@ def init_songs(progress: TaskProgress):
                 jacket=jacket_path,
             )
     except Exception as e:
-        progress.enqueue_log(f"FATAL: Error occurred!")
-        progress.enqueue_status(TaskState.Error)
+        progress.log(f"FATAL: Error occurred!")
+        progress.status_set(TaskState.Error)
         raise e
 
-    progress.enqueue_progress_bar(prog=100)
-    progress.enqueue_status(TaskState.Complete)
-    progress.enqueue_log(f"Found {len(metadata)} songs.")
+    progress.pbar_set(prog=100)
+    progress.status_set(TaskState.Complete)
+    progress.log(f"Found {len(metadata)} songs.")
+    progress.log("  NOTE: Metadata covers videos and charts as well!")
 
 
 def __init_audio_index(progress: TaskProgress):
@@ -269,8 +270,8 @@ def __init_audio_index(progress: TaskProgress):
             k = song_id_from_int(int(row[0]))
 
             audio_index[k] = v
-    progress.enqueue_log(f"Found {len(audio_index)} audio indices.")
-    progress.enqueue_progress_bar(prog=0, maximum=len(audio_index))
+    progress.log(f"Found {len(audio_index)} audio indices.")
+    progress.pbar_set(prog=0, maximum=len(audio_index))
 
 
 def __init_audio_paths(progress: TaskProgress):
@@ -291,10 +292,10 @@ def __init_audio_paths(progress: TaskProgress):
     audio_file.clear()
     for k, v in audio_index.items():
         if v is None:
-            progress.enqueue_log(f"WARNING: audio ID {k} has no cue index!!")
+            progress.log(f"WARNING: audio ID {k} has no cue index!!")
             # if k in metadata:
             #     progress.enqueue_log(f"    {metadata[k].name} - {metadata[k].artist}")
-            progress.enqueue_log(f"    This audio ID will have no sound!")
+            progress.log(f"    This audio ID will have no sound!")
             continue
 
         f = os.path.join(audio_dir, v[0], f"{v[1]}.wav")
@@ -302,17 +303,17 @@ def __init_audio_paths(progress: TaskProgress):
 
         if os.path.exists(f):
             if audio_file.get(k) is not None:
-                progress.enqueue_log(
+                progress.log(
                     f"WARNING: Duplicate audio ID {k}! Overwriting {audio_file[k]} with {f}"
                 )
 
             audio_file[k] = f
             untouched.remove(f)
             untouched.remove(f_eq)
-            progress.enqueue_progress_bar(prog=len(audio_file))
+            progress.pbar_set(prog=len(audio_file))
         else:
-            progress.enqueue_log(f"WARNING: Could not find audio for {k} ({f})!")
-    progress.enqueue_log(f"Found {len(audio_file)}/{len(audio_index)} audio files.")
+            progress.log(f"WARNING: Could not find audio for {k} ({f})!")
+    progress.log(f"Found {len(audio_file)}/{len(audio_index)} audio files.")
 
     print(f"{len(untouched)} files weren't added:")
     for f in sorted(untouched):
@@ -324,11 +325,11 @@ def init_audio(progress: TaskProgress):
     __init_audio_paths(progress)
 
     if len(audio_file) < len(audio_index):
-        progress.enqueue_status(TaskState.Alert)
+        progress.status_set(TaskState.Alert)
     else:
-        progress.enqueue_status(TaskState.Complete)
+        progress.status_set(TaskState.Complete)
 
-    progress.enqueue_progress_bar(prog=len(audio_file))
+    progress.pbar_set(prog=len(audio_file))
 
 
 def jackets_progress_task(progress: TaskProgress):
@@ -337,9 +338,9 @@ def jackets_progress_task(progress: TaskProgress):
         if metadata[k].jacket is not None:
             jackets_present += 1
 
-    progress.enqueue_progress_bar(prog=jackets_present, maximum=len(metadata))
-    progress.enqueue_log(f"Found {jackets_present}/{len(metadata)} jackets.")
-    progress.enqueue_status(
+    progress.pbar_set(prog=jackets_present, maximum=len(metadata))
+    progress.log(f"Found {jackets_present}/{len(metadata)} jackets.")
+    progress.status_set(
         TaskState.Alert if jackets_present < len(metadata) else TaskState.Complete
     )
 

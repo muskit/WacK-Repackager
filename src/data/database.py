@@ -63,6 +63,7 @@ def init_songs(progress: TaskProgress):
             genre: int = None
             name: str = None
             artist: str = None
+            rubi: str = None
             copyright: str = None
             tempo: str = None
             version: int = None
@@ -86,6 +87,8 @@ def init_songs(progress: TaskProgress):
                     name = key["Value"]
                 elif key["Name"] == "ArtistMessage":
                     artist = key["Value"]
+                elif key["Name"] == "Rubi":
+                    level_designer[2] = key["Value"]
                 elif key["Name"] == "Bpm":
                     tempo = key["Value"]
                 elif key["Name"] == "CopyrightMessage" and key["Value"] not in [
@@ -238,6 +241,7 @@ def init_songs(progress: TaskProgress):
                 id=id,
                 name=name,
                 artist=artist,
+                rubi=rubi,
                 genre_id=genre,
                 copyright=copyright,
                 tempo=tempo,

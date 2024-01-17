@@ -54,6 +54,7 @@ class SongMetadata:
     """Format: Snn-nnn"""
     name: str
     artist: str
+    rubi: str
     genre_id: int
     copyright: str
     tempo: str

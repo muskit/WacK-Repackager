@@ -83,7 +83,7 @@ class TaskProgress(Frame):
 
         self.pack(fill="x")
         self.__init_widgets()
-        self.after(1, self.__event_queue_process)
+        self.after(200, self.__event_queue_process)
 
     def __init_widgets(self):
         Label(self, text=self.name).pack(side="left")
@@ -117,7 +117,7 @@ class TaskProgress(Frame):
         except Empty:
             pass
 
-        self.after(1, self.__event_queue_process)
+        self.after(200, self.__event_queue_process)
 
     def __set_progress(
         self, step: int = None, prog: int = None, maximum: int = None, stop_anim=False
@@ -173,6 +173,8 @@ class DataSetupWindow(Toplevel):
 
         self.event_queue: Queue[tuple[str, Any]] = Queue()
         self.__init_widgets()
+
+        # TODO: ask for path if first time running
         self.reset_tasks()
 
     def __init_widgets(self):

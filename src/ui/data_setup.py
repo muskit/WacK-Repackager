@@ -291,6 +291,7 @@ class DataSetupWindow(Toplevel):
 
     def start_tasks(self):
         """Tasks thread starter"""
+        ListingTab.instance.table_clear()
 
         if self.__cur_tasks_thread is not None:
             self.__cur_tasks_thread.join()

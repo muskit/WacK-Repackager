@@ -40,7 +40,7 @@ class MetadataPanel(Frame):
         # Spacer
         Frame(self, height=10).pack(fill="y")
 
-        self.lbl_game = Label(self, text="GAME VERSION", anchor=CENTER)
+        self.lbl_game = Label(self, text="Game Release", anchor=CENTER)
         self.lbl_game.pack(fill=X, padx=4)
 
         # Spacer

@@ -179,14 +179,13 @@ class DataSetupWindow(Toplevel):
 
     def __init_widgets(self):
         # Path Field
-        path_container = Frame(self)
-        Label(path_container, text="Working Folder Path:").pack(anchor="w")
+        path_container = LabelFrame(self, text="Working Folder Path")
         self.__entry_path = Entry(path_container, width=67, textvariable=self.str_path)
-        self.__entry_path.pack(side=LEFT)
+        self.__entry_path.pack(side=LEFT, padx=(5, 0), pady=(0, 5))
         self.__btn_browse = Button(
             path_container, text="Browse", command=self.__action_dirpicker
         )
-        self.__btn_browse.pack(side=LEFT)
+        self.__btn_browse.pack(side=LEFT, padx=(1, 5), pady=(0, 5))
         path_container.pack(pady=(3, 0))
 
         # Progress
@@ -238,7 +237,7 @@ class DataSetupWindow(Toplevel):
         self.__log_win["state"] = "disabled"
         self.__log_win.see("end")
 
-    def __action_path_change(self, a, b, c):
+    def __action_path_change(self, *_):
         self.__btn_rescan["state"] = (
             "normal" if os.path.isdir(self.str_path.get()) else "disabled"
         )

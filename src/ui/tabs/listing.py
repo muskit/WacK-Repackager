@@ -25,6 +25,9 @@ class MetadataPanel(Frame):
         self.init_widgets()
 
     def init_widgets(self):
+        self.lbl_id = Label(self, text="Song ID", anchor=CENTER, background="lightgray")
+        self.lbl_id.pack(fill=X, padx=(1, 2), pady=1)
+
         self.image = ImageTk.PhotoImage(self.img_jacket_placeholder)
         self.md_img = Label(self, image=self.image)
         self.md_img.pack(pady=10)
@@ -47,8 +50,8 @@ class MetadataPanel(Frame):
         Frame(self, height=10).pack(fill="y")
 
     def set_song(self, song: SongMetadata):
+        self.lbl_id.configure(text=song.id)
         path = song.jacket
-        print(path)
         self.image = ImageTk.PhotoImage(Image.open(path).resize((200, 200)))
         self.md_img.configure(image=self.image)
         self.lbl_name.configure(text=song.name)

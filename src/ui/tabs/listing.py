@@ -2,12 +2,16 @@ from __future__ import annotations
 
 from enum import Enum
 
+from ..util import *
+
 from tkinter import *
 from tkinter.ttk import *
+import tkinter.font as tkFont
+
 from PIL import Image, ImageTk
 
 import data.database as db
-from data.metadata import SongMetadata, category_index
+from data.metadata import *
 
 
 class MetadataPanel(Frame):
@@ -24,13 +28,34 @@ class MetadataPanel(Frame):
         self.image = ImageTk.PhotoImage(self.img_jacket_placeholder)
         self.md_img = Label(self, image=self.image)
         self.md_img.pack(pady=10)
-        Label(self, text="test").pack()
+
+        f = tkFont.nametofont("TkDefaultFont").actual()
+        self.lbl_name = Label(self, text="Song Name", anchor=CENTER)
+        self.lbl_name.configure(font=(f["family"], 14, ""))
+        self.lbl_name.pack(fill=X, padx=4)
+
+        self.lbl_artist = Label(self, text="Artist", anchor=CENTER)
+        self.lbl_artist.pack(fill=X, padx=4)
+
+        # Spacer
+        Frame(self, height=10).pack(fill="y")
+
+        self.lbl_game = Label(self, text="GAME VERSION", anchor=CENTER)
+        self.lbl_game.pack(fill=X, padx=4)
+
+        # Spacer
+        Frame(self, height=10).pack(fill="y")
 
     def set_song(self, song: SongMetadata):
         path = song.jacket
         print(path)
         self.image = ImageTk.PhotoImage(Image.open(path).resize((200, 200)))
         self.md_img.configure(image=self.image)
+        self.lbl_name.configure(text=song.name)
+        try_ellipsis(self.lbl_name)
+        self.lbl_artist.configure(text=song.artist)
+        try_ellipsis(self.lbl_artist)
+        self.lbl_game.configure(text=game_version[song.version])
 
 
 class ListingTab(Frame):

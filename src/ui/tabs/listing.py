@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import Enum
+from enum import IntEnum
 
 from ..util import *
 
@@ -23,6 +23,7 @@ class MetadataPanel(Frame):
         super().__init__(master, width=220, relief=GROOVE)
         self.pack_propagate(False)
         self.init_widgets()
+        self.jackets: dict[str, ImageTk.PhotoImage] = {}
 
     def init_widgets(self):
         self.lbl_id = Label(self, text="Song ID", anchor=CENTER, background="lightgray")
@@ -52,7 +53,7 @@ class MetadataPanel(Frame):
     def set_song(self, song: SongMetadata):
         self.lbl_id.configure(text=song.id)
         path = song.jacket
-        self.image = ImageTk.PhotoImage(Image.open(path).resize((200, 200)))
+        self.image = self.jackets[song.id]
         self.md_img.configure(image=self.image)
         self.lbl_name.configure(text=song.name)
         try_ellipsis(self.lbl_name)
@@ -64,17 +65,29 @@ class MetadataPanel(Frame):
 class ListingTab(Frame):
     instance: ListingTab = None
 
+    class FilterType(IntEnum):
+        NONE = 0
+        TITLE = 1
+        ARTIST = 2
+        GENRE = 3
+        GAME = 4
+
     def __init__(self, master):
         ListingTab.instance = self
         super().__init__(master)
-        self.__init_widgets()
+
         self.__table_cur_col_sort: str = None
         self.__table_rev_sort: bool = False
+        self.__filter_type = IntVar(self, 0)
+        self.__init_widgets()
 
     def __init_widgets(self):
+        ## Left Half
+        left_container = Frame(self)
+        left_container.pack(fill=BOTH, expand=True, side=LEFT)
         # Table of songs in database
-        table_container = Frame(self)
-        table_container.pack(fill=BOTH, expand=True, side=LEFT)
+        table_container = Frame(left_container)
+        table_container.pack(fill=BOTH, expand=True, side=TOP)
         self.treeview = Treeview(
             table_container, columns=("id", "title", "artist", "genre")
         )
@@ -98,6 +111,17 @@ class ListingTab(Frame):
         tv_scr.pack(fill=Y, side=RIGHT)
         self.treeview.configure(yscrollcommand=tv_scr.set)
 
+        # filter_container = Frame(left_container)
+        # filter_container.pack(fill=X, side=BOTTOM, pady=(2, 0), padx=2)
+        # Label(filter_container, text="Filter by:").pack(side=LEFT, padx=2)
+        # Combobox(
+        #     filter_container,
+        #     state="readonly",
+        #     values=ListingTab.FilterType._member_names_,
+        #     textvariable=self.__filter_type,
+        # ).pack(side=LEFT, pady=(2, 0), padx=2)
+        # Entry(filter_container, width=75).pack(fill=X, side=RIGHT, pady=(2, 0), padx=2)
+
         self.md_panel = MetadataPanel(self)
         self.md_panel.pack(fill="both", side=RIGHT, expand=False)
 
@@ -114,6 +138,12 @@ class ListingTab(Frame):
     def __on_table_select(self, event):
         id = self.treeview.selection()[-1]
         self.md_panel.set_song(db.metadata[id])
+
+    def refresh_jacket_previews(self):
+        """Refresh the jacket previews."""
+        self.md_panel.jackets.clear()
+        for id, img in db.jacket_preview.items():
+            self.md_panel.jackets[id] = ImageTk.PhotoImage(img)
 
     def table_clear(self):
         self.treeview.delete(*self.treeview.get_children())

@@ -16,6 +16,7 @@ class MainWidget(Notebook):
     def __init__(self, master):
         super().__init__(master)
         self.__init_widgets()
+        self.bind("<<NotebookTabChanged>>", self.__on_tab_change)
 
     def __init_widgets(self):
         self.listing_tab = ListingTab(self)
@@ -23,6 +24,11 @@ class MainWidget(Notebook):
 
         self.add(self.listing_tab, text="Songs")
         self.add(self.export_tab, text="Export")
+
+    def __on_tab_change(self, event):
+        match self.index("current"):
+            case 1:
+                self.export_tab.refresh()
 
 
 class MainWindow(Tk):
@@ -65,9 +71,9 @@ class MainWindow(Tk):
     def __try_welcome(self):
         if not config.cfg_file_loaded:
             self.show_and_focus_toplevel(WelcomeWindow)
-            self.show_data_setup(show_picker=True)
+            self.show_data_setup(run_tasks=True, show_picker=True)
         else:
-            self.show_data_setup(show_picker=False)
+            self.show_data_setup(run_tasks=True, show_picker=False)
 
     def center_to_screen(self):
         """Center window to screen."""
@@ -101,8 +107,10 @@ class MainWindow(Tk):
         self.center_toplevel(win)
         self.wait_window(win)
 
-    def show_data_setup(self, show_picker=False):
-        self.show_and_focus_toplevel(DataSetupWindow, show_picker)
+    def show_data_setup(self, run_tasks=False, show_picker=False):
+        self.show_and_focus_toplevel(
+            DataSetupWindow, run_tasks=run_tasks, show_file_picker=show_picker
+        )
         # refresh listing tab
 
     def __exit(self):

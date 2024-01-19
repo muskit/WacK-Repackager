@@ -4,8 +4,11 @@ import re
 import json
 from typing import Callable
 
+from PIL import Image
+
 import config
 from ui.data_setup import TaskProgress, TaskState
+from ui.tabs.listing import ListingTab
 from util import awb_index, song_id_from_int
 from .metadata import Difficulty, DifficultyName, SongMetadata
 
@@ -19,6 +22,9 @@ audio_index: dict[str, tuple[str, int]] = dict()
 
 audio_file: dict[str, str] = dict()
 """ID to audio filename"""
+
+jacket_preview: dict[str, Image.Image] = dict()
+"""ID to resized PIL Image of jacket"""
 
 jacket_file: dict[str, str] = dict()
 """ID to jacket filename"""
@@ -341,8 +347,10 @@ def jackets_progress_task(progress: TaskProgress):
     for k in metadata:
         if metadata[k].jacket is not None:
             jackets_present += 1
+            jacket_preview[k] = Image.open(metadata[k].jacket).resize((200, 200))
+        progress.pbar_set(prog=jackets_present, maximum=len(metadata))
 
-    progress.pbar_set(prog=jackets_present, maximum=len(metadata))
+    ListingTab.instance.refresh_jacket_previews()
     progress.log(f"Found {jackets_present}/{len(metadata)} jackets.")
     progress.status_set(
         TaskState.Alert if jackets_present < len(metadata) else TaskState.Complete

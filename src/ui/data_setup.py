@@ -3,9 +3,7 @@ from datetime import datetime
 from threading import Thread
 from collections import deque
 from queue import Queue, Empty
-import traceback
 from typing import Any, Callable
-from random import randint
 from enum import Enum
 import os
 
@@ -156,7 +154,7 @@ class TaskProgress(Frame):
 
 
 class DataSetupWindow(Toplevel):
-    def __init__(self, master, file_picker_init=False):
+    def __init__(self, master, run_tasks=False, show_file_picker=False):
         super().__init__(master=master)
 
         self.title("Data Setup")
@@ -174,8 +172,12 @@ class DataSetupWindow(Toplevel):
         self.event_queue: Queue[tuple[str, Any]] = Queue()
         self.__init_widgets()
 
-        # TODO: ask for path if first time running
-        self.reset_tasks()
+        # ask for path if first time running
+        if not config.cfg_file_loaded:
+            self.__action_dirpicker()
+
+        if run_tasks:
+            self.reset_tasks()
 
     def __init_widgets(self):
         # Path Field
@@ -233,7 +235,7 @@ class DataSetupWindow(Toplevel):
 
     def __log_insert(self, msg: str):
         self.__log_win["state"] = "normal"
-        self.__log_win.insert("end", f"{msg}\n")
+        self.__log_win.insert("end", f"{msg}\n")  # TODO: preserve log
         self.__log_win["state"] = "disabled"
         self.__log_win.see("end")
 

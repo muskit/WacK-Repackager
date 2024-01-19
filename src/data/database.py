@@ -184,13 +184,13 @@ def init_songs(progress: TaskProgress):
                         background_video[i] = os.path.join(videos_dir, f)
 
             # mer difficulty-audio IDs
-            mer_dir = f"{config.working_path}/MusicData/{id}"
-            for jacket_root, _, files in os.walk(f"{mer_dir}"):
+            mer_dir = os.path.join(config.working_path, "MusicData", id)
+            for _, _, files in os.walk(f"{mer_dir}"):
                 for f in files:
                     diff_idx = int(re.search(r"\d\d.mer", f).group()[:2])
 
                     lines: list[str]
-                    with open(f"{jacket_root}/{f}", "r") as chf:
+                    with open(os.path.join(mer_dir, f), "r") as chf:
                         lines = chf.readlines()
                     a_id = None
                     offset = None
@@ -230,14 +230,14 @@ def init_songs(progress: TaskProgress):
                 difficulties[i] = diff
 
             # jacket path to png
-            jacket_root = os.path.join(jackets_dir, *jacket_path.split("/"))
-            if os.path.isdir(jacket_root):
-                for f in os.listdir(jacket_root):
+            mer_root = os.path.join(jackets_dir, *jacket_path.split("/"))
+            if os.path.isdir(mer_root):
+                for f in os.listdir(mer_root):
                     if f.endswith(".png"):
-                        jacket_path = os.path.join(jacket_root, f)
+                        jacket_path = os.path.join(mer_root, f)
                         break
             else:
-                jacket_path = f"{jacket_root}.png"
+                jacket_path = f"{mer_root}.png"
 
             if jacket_path is None or not os.path.exists(jacket_path):
                 jacket_path = None

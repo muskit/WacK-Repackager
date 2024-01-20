@@ -94,7 +94,7 @@ def init_songs(progress: TaskProgress):
                 elif key["Name"] == "ArtistMessage":
                     artist = key["Value"]
                 elif key["Name"] == "Rubi":
-                    level_designer[2] = key["Value"]
+                    rubi = key["Value"]
                 elif key["Name"] == "Bpm":
                     tempo = key["Value"]
                 elif key["Name"] == "CopyrightMessage" and key["Value"] not in [

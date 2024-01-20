@@ -160,7 +160,7 @@ class ExportTab(Frame):
                     self.treeview.insert(
                         "",
                         "end",
-                        text="",
+                        id=song.id,
                         values=(
                             song.id,
                             song.name,
@@ -175,7 +175,7 @@ class ExportTab(Frame):
                     self.treeview.insert(
                         "",
                         "end",
-                        text="",
+                        id=song.id,
                         values=(
                             song.id,
                             song.name,

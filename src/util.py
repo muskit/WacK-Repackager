@@ -1,3 +1,7 @@
+import os
+import re
+
+
 def song_id_from_int(num: int):
     if num < 0:
         raise ValueError("cannot be negative")
@@ -14,3 +18,11 @@ def awb_index(id: str):
     if len(tokens) < 2:
         return None
     return (tokens[0], int(tokens[1]))
+
+
+def file_exists(path: str, regex: str) -> bool:
+    """Check if a file exists in a directory based on regex."""
+    for file in os.listdir(path):
+        if re.match(regex, file, re.IGNORECASE):
+            return True
+    return False

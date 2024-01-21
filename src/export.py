@@ -7,7 +7,7 @@ from util import file_exists
 import config
 from data.database import *
 from data.metadata import *
-from ui.tabs.export import ExportTab
+from ui.tabs.export_tab import ExportTab
 
 
 def meta_mer(song: SongMetadata) -> str:

@@ -8,8 +8,8 @@ import config
 from .data_setup import DataSetupWindow
 from .welcome_window import WelcomeWindow
 
-from .tabs.listing import ListingTab
-from .tabs.export import ExportTab
+from .tabs.listing_tab import ListingTab
+from .tabs.export_tab import ExportTab
 
 
 class MainWidget(Notebook):

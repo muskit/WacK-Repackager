@@ -8,7 +8,7 @@ from PIL import Image
 
 import config
 from ui.data_setup import TaskProgress, TaskState
-from ui.tabs.listing import ListingTab
+from ui.tabs.listing_tab import ListingTab
 from util import awb_index, song_id_from_int
 from .metadata import Difficulty, DifficultyName, SongMetadata
 

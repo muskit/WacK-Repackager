@@ -11,7 +11,7 @@ import config
 import data.database as db
 import data.metadata as md
 from util import ffmpeg_on_path
-from .listing import ListingTab
+from .listing_tab import ListingTab
 
 
 class ExportGroup(IntEnum):

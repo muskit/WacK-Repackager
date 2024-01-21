@@ -15,7 +15,7 @@ from PIL import Image, ImageTk
 
 import config
 from data import database
-from .tabs.listing import ListingTab
+from .tabs.listing_tab import ListingTab
 
 # TODO: for test export
 from export import export_song

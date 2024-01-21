@@ -5,15 +5,15 @@ import webbrowser
 
 
 class WelcomeWindow(Toplevel):
-    def __init__(self, master):
+    def __init__(self, master, true_welcome=True):
         super().__init__(master)
 
         self.title("Welcome")
         self.geometry("350x130")
         self.resizable(False, False)
-        self.__layout_widgets()
+        self.__layout_widgets(true_welcome)
 
-    def __layout_widgets(self):
+    def __layout_widgets(self, true_welcome: bool):
         i = Label(self, image="::tk::icons::information")
         i.pack(anchor="center", pady=(12, 0))
         l = Label(
@@ -34,9 +34,10 @@ class WelcomeWindow(Toplevel):
         Button(btn_container, text="View HOWTO", command=self.__action_howto).pack(
             side="left"
         )
-        Button(
-            btn_container, text="Exit Application", command=self.__action_exit_app
-        ).pack(side="left")
+        if true_welcome:
+            Button(
+                btn_container, text="Exit Application", command=self.__action_exit_app
+            ).pack(side="left")
 
     def __action_continue(self):
         self.destroy()

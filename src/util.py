@@ -2,6 +2,8 @@ import os
 import re
 import shutil
 
+from tkinter import Widget
+
 
 def song_id_from_int(num: int):
     if num < 0:
@@ -32,3 +34,15 @@ def file_exists(path: str, regex: str) -> bool:
         if re.match(regex, file, re.IGNORECASE):
             return True
     return False
+
+
+def disable_children_widgets(widget: Widget):
+    """Disable all nested children widgets."""
+    for child in widget.winfo_children():
+        if len(child.winfo_children()) > 0:
+            disable_children_widgets(child)
+        else:
+            try:
+                child.configure(state="disable")
+            except:
+                pass

@@ -10,7 +10,7 @@ from tkinter.ttk import *
 import config
 import data.database as db
 import data.metadata as md
-from util import ffmpeg_on_path
+from util import *
 from .listing_tab import ListingTab
 
 
@@ -36,6 +36,7 @@ class ExportTab(Frame):
 
         self.export_group = IntVar(self, 0)
         self.export_group.trace_add("write", self.__refresh_exports_table)
+        self.working = False
 
         # bool options
         self.option_game_subfolders = BooleanVar(self)
@@ -48,11 +49,11 @@ class ExportTab(Frame):
         self.__init_widgets()
 
     def __init_widgets(self):
-        ## RIGHT BIGGER SIDE ##
-        export_container = Frame(self, relief="flat")
-        export_container.pack(side=RIGHT, fill=BOTH, expand=True)
+        ## RIGHT SIDE (export) ##
+        self.right_container = Frame(self, relief="flat")
+        self.right_container.pack(side=RIGHT, fill=BOTH, expand=True)
 
-        export_top = Frame(export_container)
+        export_top = Frame(self.right_container)
         export_top.pack(fill=BOTH, expand=True)
 
         # Table of songs to be exported
@@ -75,7 +76,7 @@ class ExportTab(Frame):
         self.treeview.column("game", width=150, stretch=False)
 
         # Export path and button
-        export_btm = Frame(export_container)
+        export_btm = Frame(self.right_container)
         export_btm.pack(fill=X)
         path_container = LabelFrame(
             export_btm,
@@ -91,19 +92,28 @@ class ExportTab(Frame):
         self.__btn_browse.pack(side=LEFT, padx=(1, 5), pady=(0, 5))
         path_container.pack(pady=(3, 0), side=LEFT)
 
-        self.__btn_export = Button(export_btm, text="Export", command=None)
-        self.__btn_export.pack(side=RIGHT, anchor="s", pady=8)
+        self.right_container = Frame(export_btm)
+        self.right_container.pack(fill=X, expand=True, side=RIGHT, pady=(13, 0))
+        self.__pbar_export = Progressbar(
+            self.right_container, orient=HORIZONTAL, length=100
+        )
+        self.__pbar_export.pack(side=LEFT, fill=X, expand=True, padx=(10, 3))
 
-        ## LEFT SMALLER SIDE ##
-        options_container = Frame(self, relief="solid", width=250)
-        options_container.pack_propagate(0)
-        options_container.pack(side=LEFT, fill=Y)
-        Label(options_container, text="Export Options", background="lightgray").pack(
+        self.__btn_export = Button(
+            self.right_container, text="Export", command=self.__action_export
+        )
+        self.__btn_export.pack(side=RIGHT, anchor="s")
+
+        ## LEFT SIDE (options) ##
+        self.left_container = Frame(self, relief="solid", width=250)
+        self.left_container.pack_propagate(0)
+        self.left_container.pack(side=LEFT, fill=Y)
+        Label(self.left_container, text="Export Options", background="lightgray").pack(
             fill=X, padx=1, pady=1
         )
 
         # Export group options
-        export_group_options = LabelFrame(options_container, text="Group to Export")
+        export_group_options = LabelFrame(self.left_container, text="Group to Export")
         export_group_options.pack(fill=X, padx=(5, 15), pady=(10, 20))
         Radiobutton(
             export_group_options,
@@ -127,7 +137,7 @@ class ExportTab(Frame):
         self.radio_exp_filtered.pack(anchor="w", padx=5)
 
         # Other options
-        audio_conv_options = LabelFrame(options_container, text="Audio Conversion")
+        audio_conv_options = LabelFrame(self.left_container, text="Audio Conversion")
         audio_conv_options.pack(fill=X, padx=(5, 15), pady=(10, 20))
         Checkbutton(
             audio_conv_options,
@@ -145,19 +155,19 @@ class ExportTab(Frame):
         self.combobox_audio_conv_target.pack()
 
         Checkbutton(
-            options_container,
+            self.left_container,
             text="Exclude Videos",
             variable=self.option_exclude_videos,
         ).pack(anchor="w", padx=5)
 
         Checkbutton(
-            options_container,
+            self.left_container,
             text="Export to Subfolders by Game",
             variable=self.option_game_subfolders,
         ).pack(anchor="w", padx=5)
 
         Checkbutton(
-            options_container,
+            self.left_container,
             text="Delete Original Files",
             variable=self.option_delete_originals,
         ).pack(anchor="w", padx=5)
@@ -175,12 +185,32 @@ class ExportTab(Frame):
             state="readonly" if self.option_convert_audio.get() else DISABLED
         )
 
+    def __action_export(self, *_):
+        self.working = True
+
+        # disable widgets
+        self.__btn_export.configure(text="Abort", command=self.__action_abort_export)
+        self.__btn_browse.configure(state=DISABLED)
+        self.__entry_path.configure(state=DISABLED)
+        disable_children_widgets(self.left_container)
+
+        # TODO: start export thread
+
+    def __action_abort_export(self, *_):
+        self.__btn_export.configure(text="Reset", command=self.__action_reset)
+        # TODO: abort export thread
+
+    def __action_reset(self, *_):
+        self.working = False
+
+        self.__btn_export.configure(text="Export", command=self.__action_export)
+        # TODO: reset widgets
+
     def __refresh_exports_table(self, *_):
         self.treeview.delete(*self.treeview.get_children())
 
         match self.export_group.get():
             case ExportGroup.ALL:
-                print("Adding ALL songs...")
                 for song in db.metadata.values():
                     self.treeview.insert(
                         "",
@@ -194,7 +224,6 @@ class ExportTab(Frame):
                         ),
                     )
             case ExportGroup.SELECTED:
-                print("Adding SELECTED songs...")
                 for id in ListingTab.instance.treeview.selection():
                     song = db.metadata[id]
                     self.treeview.insert(
@@ -209,7 +238,6 @@ class ExportTab(Frame):
                         ),
                     )
             case ExportGroup.FILTERED:
-                print("Adding FILTERED songs...")
                 for id in ListingTab.instance.treeview.get_children():
                     song = db.metadata[id]
                     self.treeview.insert(
@@ -225,6 +253,10 @@ class ExportTab(Frame):
                     )
 
     def refresh(self):
+        """Called upon tab being visible."""
+        if self.working:
+            return
+
         if ListingTab.instance.filter_game.get() == "None":
             self.radio_exp_filtered.configure(state=DISABLED)
         else:

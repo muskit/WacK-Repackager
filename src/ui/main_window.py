@@ -1,3 +1,4 @@
+from __future__ import annotations
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
@@ -13,7 +14,10 @@ from .tabs.export_tab import ExportTab
 
 
 class MainWidget(Notebook):
+    instance: MainWidget = None
+
     def __init__(self, master):
+        MainWidget.instance = self
         super().__init__(master)
         self.__init_widgets()
         self.bind("<<NotebookTabChanged>>", self.__on_tab_change)
@@ -35,8 +39,8 @@ class MainWindow(Tk):
     def __init__(self):
         super().__init__()
         self.title("WacK Repackager")
-        self.geometry("1024x600")
-        self.minsize(900, 600)
+        self.geometry("1024x610")
+        self.minsize(900, 610)
         self.protocol("WM_DELETE_WINDOW", self.__exit)  # upon closing the window (X)
 
         self.__init_widgets()
@@ -56,7 +60,9 @@ class MainWindow(Tk):
         about_menu = Menu(menu_bar, tearoff=0)
         about_menu.add_command(
             label="Open Welcome Screen",
-            command=lambda: self.show_and_focus_toplevel(WelcomeWindow),
+            command=lambda: self.show_and_focus_toplevel(
+                WelcomeWindow, true_welcome=False
+            ),
         )
         about_menu.add_separator()
         about_menu.add_command(label="About", command=None)
@@ -104,6 +110,7 @@ class MainWindow(Tk):
         win = TLClass(self, *args, **kwargs)
         win.transient(self)
         win.grab_set()
+        win.focus_force()
         self.center_toplevel(win)
         self.wait_window(win)
 
@@ -114,6 +121,11 @@ class MainWindow(Tk):
         # refresh listing tab
 
     def __exit(self):
-        print("exit event invoked!")
+        if ExportTab.instance.working:
+            if not messagebox.askokcancel(
+                "Exit Application",
+                "Are you sure you want to exit? This will cancel any ongoing exports.",
+            ):
+                return
         config.save()
         self.destroy()

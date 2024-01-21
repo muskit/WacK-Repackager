@@ -322,3 +322,4 @@ class DataSetupWindow(Toplevel):
 
         # TODO: test export
         export_song(database.metadata["S03-030"])
+        export_song(database.metadata["S02-021"])

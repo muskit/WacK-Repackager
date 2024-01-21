@@ -12,30 +12,47 @@ from ui.tabs.export import ExportTab
 
 def meta_mer(song: SongMetadata) -> str:
     """Contents of meta.mer based on song metadata."""
-    return (
+    ret = (
         f"#TITLE {song.name}\n"
         f"#RUBI {song.rubi}\n"
         f"#ARTIST {song.artist}\n"
-        f"#COPYRIGHT {song.copyright}\n"
         f"#GENRE {category_index[song.genre_id]}\n"
         f"#BPM {song.tempo}\n"
         f"#JACKET_FILE_PATH jacket.png\n"
     )
+    if song.copyright != None:
+        ret += f"#COPYRIGHT {song.copyright}\n"
+
+    return ret
 
 
-def diff_mer(mer: str, diff: Difficulty) -> str:
+def diff_mer(mer: str, diff: Difficulty, audio_ext: str) -> str:
     """Returns a chart mer with WacK-specific meta tags."""
 
     ## keep mer line if not tag; otherwise, contains whitelisted tag
-    whitelisted_tags = ["OFFSET", "BODY"]
+    whitelisted_tag_contains = ["OFFSET", "BODY"]
 
     ret = "\n".join(
         line
         for line in mer.splitlines()
-        if not any(not line.startswith("#") or tag in line for tag in whitelisted_tags)
+        if any(
+            not line.startswith("#") or tag in line for tag in whitelisted_tag_contains
+        )
     )
 
-    ## TODO: add tags
+    pre = (
+        f"#LEVEL {diff.diffLevel}\n"
+        f"#MUSIC_FILE_PATH {diff.audio_id}.{audio_ext}\n"
+        f"#CLEAR_THRESHOLD {diff.clearRequirement}\n"
+        f"#AUTHOR {diff.designer}\n"
+        f"#PREVIEW_TIME {diff.audio_preview_time}\n"
+        f"#PREVIEW_LENGTH {diff.audio_preview_length}\n"
+    )
+
+    if diff.video != None:
+        pre += f"#MOVIE_FILE_PATH {os.path.basename(diff.video)}\n"
+
+    return pre + ret
 
 
 def export_song(song: SongMetadata):
@@ -43,9 +60,14 @@ def export_song(song: SongMetadata):
     from data.database import audio_file
 
     out = config.export_path
-
     if ExportTab.instance.option_game_subfolders.get():
         out = os.path.join(out, game_version[song.version])
+
+    audio_ext = (
+        ExportTab.instance.combobox_audio_conv_target.get()
+        if ExportTab.instance.option_convert_audio.get()
+        else "wav"
+    )
 
     # create song folder
     song_path = os.path.join(out, f"{song.artist} - {song.name}")
@@ -62,37 +84,45 @@ def export_song(song: SongMetadata):
     with open(meta_path, "w", encoding="utf-8") as f:
         f.write(meta)
 
-    # TODO: copy/convert audio file
-
     # per-difficulty operations
     for i, diff in enumerate(song.difficulties):
         if diff == None:
             continue
 
-        # copy/convert audio named after song id if it doesn't exist
+        # copy/convert audio named after song id if file doesn't exist
         a_id = diff.audio_id
-        search_regex = f"{a_id}.(wav|mp3)$"
-        if not file_exists(song_path, search_regex):
-            if ExportTab.instance.option_mp3_convert.get():
-                # TODO: convert to mp3
-                pass
-            else:
-                # copy audio file
+        if audio_ext == "wav":
+            search_regex = f"{a_id}.wav$"
+            if not file_exists(song_path, search_regex):
                 src = audio_file[a_id]
                 dest = os.path.join(song_path, f"{a_id}.wav")
                 shutil.copy2(src, dest)
+        else:
+            search_regex = f"{a_id}.{audio_ext}$"
+            if not file_exists(song_path, search_regex):
+                # TODO: convert to target format
+                pass
 
-        # copy chart file
+        # copy video file
+        if diff.video != None:
+            dest = os.path.join(song_path, os.path.basename(diff.video))
+            if not os.path.exists(dest):
+                print(diff.video)
+                shutil.copy2(diff.video, dest)
+
+        # copy chart file with WacK-specific meta tags
         src = os.path.join(
             config.working_path, "MusicData", song.id, f"{song.id}_0{i}.mer"
         )
         dest = os.path.join(song_path, f"{i}.mer")
-        # TODO: change approach to extracting lines, getting rid of unnecessary meta tags
-        shutil.copy2(src, dest)
 
-        # TODO: add chart-specific meta tags to dest file
+        with open(src, "r", encoding="utf-8") as f:
+            mer = f.read()
 
-        # TODO: copy video file
+        out = diff_mer(mer, diff, audio_ext)
+
+        with open(dest, "w", encoding="utf-8") as f:
+            f.write(out)
 
 
 def export_selection_task(progress):

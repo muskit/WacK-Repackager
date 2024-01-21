@@ -126,7 +126,7 @@ def init_songs(progress: TaskProgress):
                     level_clear_requirements[0] = key["Value"]
                 elif key["Name"] == "ClearNormaRateHard":
                     level_clear_requirements[1] = key["Value"]
-                elif key["Name"] == "ClearNormaRateExpert":
+                elif key["Name"] == "ClearNormaRateExtreme":
                     level_clear_requirements[2] = key["Value"]
                 elif key["Name"] == "ClearNormaRateInferno":
                     level_clear_requirements[3] = key["Value"]
@@ -181,7 +181,7 @@ def init_songs(progress: TaskProgress):
                         progress.log(f"    {path}")
                         background_video[i] = None
                     else:
-                        background_video[i] = os.path.join(videos_dir, f)
+                        background_video[i] = path
 
             # mer difficulty-audio IDs
             mer_dir = os.path.join(config.working_path, "MusicData", id)

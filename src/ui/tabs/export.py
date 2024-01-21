@@ -118,12 +118,13 @@ class ExportTab(Frame):
             value=ExportGroup.SELECTED,
         )
         self.radio_exp_selected.pack(anchor="w", padx=5)
-        Radiobutton(
+        self.radio_exp_filtered = Radiobutton(
             export_group_options,
             variable=self.export_group,
             text="Export Filtered Songs",
             value=ExportGroup.FILTERED,
-        ).pack(anchor="w", padx=5)
+        )
+        self.radio_exp_filtered.pack(anchor="w", padx=5)
 
         # Other options
         audio_conv_options = LabelFrame(options_container, text="Audio Conversion")
@@ -189,7 +190,7 @@ class ExportTab(Frame):
                             song.id,
                             song.name,
                             song.artist,
-                            md.game_version[song.version],
+                            md.version_to_game[song.version],
                         ),
                     )
             case ExportGroup.SELECTED:
@@ -204,18 +205,40 @@ class ExportTab(Frame):
                             song.id,
                             song.name,
                             song.artist,
-                            md.game_version[song.version],
+                            md.version_to_game[song.version],
                         ),
                     )
             case ExportGroup.FILTERED:
-                pass
+                print("Adding FILTERED songs...")
+                for id in ListingTab.instance.treeview.get_children():
+                    song = db.metadata[id]
+                    self.treeview.insert(
+                        "",
+                        "end",
+                        id=song.id,
+                        values=(
+                            song.id,
+                            song.name,
+                            song.artist,
+                            md.version_to_game[song.version],
+                        ),
+                    )
 
     def refresh(self):
+        if ListingTab.instance.filter_game.get() == "None":
+            self.radio_exp_filtered.configure(state=DISABLED)
+        else:
+            self.radio_exp_filtered.configure(state=NORMAL)
+
         if len(ListingTab.instance.treeview.selection()) == 0:
             self.radio_exp_selected.configure(state=DISABLED)
             if self.export_group.get() in (0, ExportGroup.SELECTED):
-                self.export_group.set(ExportGroup.ALL)
-            # else if a filter in song listing is set
+                if ListingTab.instance.filter_game.get() == "None":
+                    self.export_group.set(ExportGroup.ALL)
+                else:
+                    self.export_group.set(ExportGroup.FILTERED)
+            elif ListingTab.instance.filter_game.get() != "None":
+                self.export_group.set(ExportGroup.FILTERED)
         else:
             self.radio_exp_selected.configure(state=NORMAL)
             self.export_group.set(ExportGroup.SELECTED)

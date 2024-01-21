@@ -61,7 +61,7 @@ def export_song(song: SongMetadata):
 
     out = config.export_path
     if ExportTab.instance.option_game_subfolders.get():
-        out = os.path.join(out, game_version[song.version])
+        out = os.path.join(out, version_to_game[song.version])
 
     audio_ext = (
         ExportTab.instance.combobox_audio_conv_target.get()

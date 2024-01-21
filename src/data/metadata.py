@@ -22,13 +22,15 @@ class DifficultyName(Enum):
     Inferno = 3
 
 
-game_version = {
+version_to_game = {
     1: "WACCA",
     2: "WACCA S",
     3: "WACCA LILY",
     4: "WACCA LILY R",
     5: "WACCA Reverse",
 }
+
+game_to_version = {v: k for k, v in version_to_game.items()}
 
 
 @dataclass

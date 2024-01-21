@@ -227,7 +227,7 @@ class DataSetupWindow(Toplevel):
                             self.__btn_browse["state"] = "normal"
 
                             # update table
-                            ListingTab.instance.table_populate(database.metadata)
+                            ListingTab.instance.table_populate()
                     case "log":
                         # msg[1] is str
                         self.__log_insert(msg[1])

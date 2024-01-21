@@ -52,14 +52,13 @@ class MetadataPanel(Frame):
 
     def set_song(self, song: SongMetadata):
         self.lbl_id.configure(text=song.id)
-        path = song.jacket
         self.image = self.jackets[song.id]
         self.md_img.configure(image=self.image)
         self.lbl_name.configure(text=song.name)
         try_ellipsis(self.lbl_name)
         self.lbl_artist.configure(text=song.artist)
         try_ellipsis(self.lbl_artist)
-        self.lbl_game.configure(text=game_version[song.version])
+        self.lbl_game.configure(text=version_to_game[song.version])
 
 
 class ListingTab(Frame):
@@ -78,7 +77,8 @@ class ListingTab(Frame):
 
         self.__table_cur_col_sort: str = None
         self.__table_rev_sort: bool = False
-        self.__filter_type = IntVar(self, 0)
+        self.filter_game = StringVar(self, "None")
+        self.filter_game.trace_add("write", lambda *_: self.table_populate())
         self.__init_widgets()
 
     def __init_widgets(self):
@@ -111,16 +111,15 @@ class ListingTab(Frame):
         tv_scr.pack(fill=Y, side=RIGHT)
         self.treeview.configure(yscrollcommand=tv_scr.set)
 
-        # filter_container = Frame(left_container)
-        # filter_container.pack(fill=X, side=BOTTOM, pady=(2, 0), padx=2)
-        # Label(filter_container, text="Filter by:").pack(side=LEFT, padx=2)
-        # Combobox(
-        #     filter_container,
-        #     state="readonly",
-        #     values=ListingTab.FilterType._member_names_,
-        #     textvariable=self.__filter_type,
-        # ).pack(side=LEFT, pady=(2, 0), padx=2)
-        # Entry(filter_container, width=75).pack(fill=X, side=RIGHT, pady=(2, 0), padx=2)
+        filter_container = Frame(left_container)
+        filter_container.pack(fill=X, side=BOTTOM, pady=(2, 0), padx=2)
+        Label(filter_container, text="Filter by game version:").pack(side=LEFT, padx=2)
+        Combobox(
+            filter_container,
+            state="readonly",
+            values=["None"] + list(game_to_version.keys()),
+            textvariable=self.filter_game,
+        ).pack(side=LEFT, pady=(2, 0), padx=2)
 
         self.md_panel = MetadataPanel(self)
         self.md_panel.pack(fill="both", side=RIGHT, expand=False)
@@ -136,6 +135,8 @@ class ListingTab(Frame):
             self.table_sort(col)
 
     def __on_table_select(self, event):
+        if len(self.treeview.selection()) == 0:
+            return
         id = self.treeview.selection()[-1]
         self.md_panel.set_song(db.metadata[id])
 
@@ -148,11 +149,17 @@ class ListingTab(Frame):
     def table_clear(self):
         self.treeview.delete(*self.treeview.get_children())
 
-    def table_populate(self, songs: dict[str, SongMetadata]):
+    def table_populate(self):
         """Populate the table with songs."""
         self.table_clear()
 
-        for song in songs.values():
+        for song in db.metadata.values():
+            if (
+                self.filter_game.get() != "None"
+                and song.version != game_to_version[self.filter_game.get()]
+            ):
+                continue
+
             self.treeview.insert(
                 "",
                 "end",

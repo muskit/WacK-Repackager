@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from enum import IntEnum
-import os
+from enum import IntEnum, StrEnum
+import ffmpeg
 
 from tkinter import *
 from tkinter import filedialog
@@ -10,6 +10,7 @@ from tkinter.ttk import *
 import config
 import data.database as db
 import data.metadata as md
+from util import ffmpeg_on_path
 from .listing import ListingTab
 
 
@@ -17,6 +18,11 @@ class ExportGroup(IntEnum):
     ALL = 1
     SELECTED = 2
     FILTERED = 3
+
+
+class AudioConvertTarget(StrEnum):
+    MP3 = "mp3"
+    OGG = "ogg"
 
 
 class ExportTab(Frame):
@@ -34,7 +40,9 @@ class ExportTab(Frame):
         # bool options
         self.option_game_subfolders = BooleanVar(self)
         self.option_delete_originals = BooleanVar(self)
-        self.option_mp3_convert = BooleanVar(self)
+        self.option_convert_audio = BooleanVar(self)
+        self.option_convert_audio.trace_add("write", self.__action_audio_conv_change)
+        self.option_audio_target = StringVar(self, AudioConvertTarget.MP3)
         self.option_exclude_videos = BooleanVar(self)
 
         self.__init_widgets()
@@ -118,11 +126,22 @@ class ExportTab(Frame):
         ).pack(anchor="w", padx=5)
 
         # Other options
+        audio_conv_options = LabelFrame(options_container, text="Audio Conversion")
+        audio_conv_options.pack(fill=X, padx=(5, 15), pady=(10, 20))
         Checkbutton(
-            options_container,
-            text="Convert Audio to MP3\n(requires ffmpeg on PATH!)",
-            variable=self.option_mp3_convert,
+            audio_conv_options,
+            text="Convert Audio from WAV"
+            + ("\n(ffmpeg not found on PATH!)" if not ffmpeg_on_path() else ""),
+            variable=self.option_convert_audio,
+            state=DISABLED if not ffmpeg_on_path() else NORMAL,
         ).pack(anchor="w", padx=5)
+        self.combobox_audio_conv_target = Combobox(
+            audio_conv_options,
+            state=DISABLED,
+            values=[s.value for s in AudioConvertTarget],
+            textvariable=self.option_audio_target,
+        )
+        self.combobox_audio_conv_target.pack()
 
         Checkbutton(
             options_container,
@@ -149,6 +168,11 @@ class ExportTab(Frame):
         result = filedialog.askdirectory(initialdir=config.export_path)
         if result != "":
             self.export_path.set(result)
+
+    def __action_audio_conv_change(self, *_):
+        self.combobox_audio_conv_target.configure(
+            state="readonly" if self.option_convert_audio.get() else DISABLED
+        )
 
     def __refresh_exports_table(self, *_):
         self.treeview.delete(*self.treeview.get_children())

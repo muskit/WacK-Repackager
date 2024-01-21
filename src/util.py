@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 
 
 def song_id_from_int(num: int):
@@ -18,6 +19,11 @@ def awb_index(id: str):
     if len(tokens) < 2:
         return None
     return (tokens[0], int(tokens[1]))
+
+
+def ffmpeg_on_path() -> bool:
+    """Check if ffmpeg is on the system path."""
+    return shutil.which("ffmpeg") != None
 
 
 def file_exists(path: str, regex: str) -> bool:

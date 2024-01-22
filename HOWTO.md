@@ -1,6 +1,8 @@
 # Preparing files
 This is a guide to populating the `data` working folder in this project's directory, which will eventually contain all relevant data for repacking WACCA charts. You may set up this folder elsewhere for storage space reasons; the app will let you choose a different working folder path. We will refer to this working folder as `data` throughout the guide.
 
+Start with the `data` folder bundled with the app (or in the `dist` folder of this repo). Feel free to move it to another location as mentioned above.
+
 **This project will only repack audio on Reverse 3.07 properly.**
 
 ## Table of Contents (sorted by descending time consumption)

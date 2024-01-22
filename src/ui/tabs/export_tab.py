@@ -7,7 +7,7 @@ from typing import Any
 import ffmpeg
 
 from tkinter import *
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, font as tkFont
 from tkinter.ttk import *
 from PIL import ImageTk
 
@@ -57,6 +57,7 @@ class ExportTab(Frame):
             "alert": ImageTk.PhotoImage(data_setup.ProgressIcon.image["alert"]),
             "error": ImageTk.PhotoImage(data_setup.ProgressIcon.image["error"]),
         }
+        self.songs_processed: set[str] = set()
         self.song_alerts: dict[str, list[str]] = dict()
         self.song_errors: dict[str, str] = dict()
 
@@ -211,6 +212,18 @@ class ExportTab(Frame):
             side=LEFT, padx=5
         )
 
+        export_msg_container = LabelFrame(self.left_container, text="Warnings/Errors")
+        export_msg_container.pack(fill=BOTH, expand=True, padx=5, pady=10)
+        self.lbl_messages = Label(export_msg_container, text="Lorem ipsum", anchor=NW)
+        self.lbl_messages.pack(anchor="w", padx=5, fill=BOTH, expand=True)
+        f = tkFont.nametofont("TkDefaultFont").actual()
+        self.lbl_song_stats = Label(
+            self.left_container,
+            text="0/0 songs processed",
+            font=(f["family"] + " Italic", f["size"], ""),
+        )
+        self.lbl_song_stats.pack(anchor=SE, padx=5, pady=(0, 5))
+
     def __event_queue_process(self):
         try:
             while True:
@@ -242,6 +255,7 @@ class ExportTab(Frame):
                             self.treeview.selection_add(msg[1])
                     case "finished":
                         self.__export_end(abort=False)
+                self.__refresh_song_stats()
         except Empty:
             pass
 
@@ -295,6 +309,12 @@ class ExportTab(Frame):
                             md.version_to_game[song.version],
                         ),
                     )
+        self.__refresh_song_stats()
+
+    def __refresh_song_stats(self):
+        self.lbl_song_stats.configure(
+            text=f"{len(self.songs_processed)}/{len(self.treeview.get_children())} songs processed"
+        )
 
     def __action_path_change(self, *_):
         config.export_path = self.export_path.get()
@@ -335,17 +355,20 @@ class ExportTab(Frame):
         for id in self.treeview.get_children():
             self.songs_queue.put(id)
 
-        self.song_alerts.clear()
-        self.song_errors.clear()
         self.start_export_thread()
 
     def __action_reset(self, *_):
-        self.just_finished = False
         self.__btn_export.configure(text="Export", command=self.__action_export)
         enable_children_widgets(self.left_container)
         self.__btn_browse.configure(state=NORMAL)
         self.__entry_path.configure(state=NORMAL)
         self.__pbar_val.set(0)
+
+        self.songs_processed.clear()
+        self.song_alerts.clear()
+        self.song_errors.clear()
+
+        self.just_finished = False
         self.refresh()
 
     def __action_abort(self, *_):
@@ -361,7 +384,7 @@ class ExportTab(Frame):
         )
 
         stats = (
-            f"Successfully exported {len(self.treeview.get_children()) - len(self.song_errors)} songs "
+            f"Processed {len(self.songs_processed)}/{len(self.treeview.get_children())} songs "
             f"with {len(self.song_alerts)} warnings "
             f"and {len(self.song_errors)} errors."
         )
@@ -405,26 +428,29 @@ class ExportTab(Frame):
                 id = self.songs_queue.get(block=False)
                 self.ui_queue.put_nowait(("table_status", id, "working"))
 
+                # Export
                 song = db.metadata[id]
                 print(f"Exporting {id} ({song.artist} - {song.name})...")
                 try:
-                    alert = export_song(song)
+                    alerts = export_song(song)
                 except Exception as e:
                     print(f"Error exporting {id}: {e}")
                     self.song_errors[id] = str(e)
                     self.ui_queue.put_nowait(("table_status", id, "error"))
+                    self.songs_processed.add(id)
                     continue
+                self.songs_processed.add(id)
 
-                if len(alert) == 0:
+                if len(alerts) == 0:
                     # no issues
                     self.ui_queue.put_nowait(("table_status", id, "success"))
                     self.ui_queue.put_nowait(("p_bar", 1, None, total))
                 else:
                     self.ui_queue.put_nowait(("table_status", id, "alert"))
                     print(f"Exported with warnings:")
-                    for a in alert:
+                    for a in alerts:
                         print(f"\t{a}")
-                    self.song_alerts[id] = alert
+                    self.song_alerts[id] = alerts
             except Empty:
                 print("Nothing left in the queue!")
                 break

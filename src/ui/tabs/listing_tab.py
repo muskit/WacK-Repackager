@@ -122,7 +122,6 @@ class ListingTab(Frame):
             textvariable=self.filter_game,
         ).pack(side=LEFT, pady=(2, 0), padx=2)
         f = tkFont.nametofont("TkDefaultFont").actual()
-        f["slant"] = "italic"
         self.lbl_selected = Label(
             filter_container,
             text="0/0 songs selected",

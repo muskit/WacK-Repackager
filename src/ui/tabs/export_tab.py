@@ -169,7 +169,6 @@ class ExportTab(Frame):
 
         # Other options
 
-        # TODO: implement
         audio_conv_options = LabelFrame(self.left_container, text="Audio Conversion")
         audio_conv_options.pack(fill=X, padx=(5, 15), pady=(10, 20))
         Checkbutton(
@@ -186,7 +185,6 @@ class ExportTab(Frame):
             textvariable=self.option_audio_target,
         )
         self.combobox_audio_conv_target.pack(pady=(0, 5))
-        disable_children_widgets(audio_conv_options)
 
         Checkbutton(
             self.left_container,

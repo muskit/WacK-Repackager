@@ -3,6 +3,8 @@ from queue import Empty, Queue
 import shutil
 from pathlib import Path
 
+import ffmpeg
+
 from util import *
 
 import config
@@ -98,22 +100,24 @@ def export_song(song: SongMetadata):
         # copy/convert audio named after song id if file doesn't exist
         try:
             a_id = diff.audio_id
-            if audio_ext == "wav":
-                search_regex = f"{a_id}.wav$"
-                if not file_exists(song_path, search_regex):
-                    src = audio_file[a_id]
+            src = audio_file[a_id]
+            dest_regex = f"{a_id}.{audio_ext}$"
+            if not file_exists(song_path, dest_regex):
+                if audio_ext == "wav":
                     dest = os.path.join(song_path, f"{a_id}.wav")
                     shutil.copy2(src, dest)
                     if ExportTab.instance.option_delete_originals.get():
                         os.remove(src)
-            else:
-                search_regex = f"{a_id}.{audio_ext}$"
-                if not file_exists(song_path, search_regex):
-                    # TODO: convert to target format
-                    alerts.append("Audio conversion not yet implemented")
-                    # if ExportTab.instance.option_delete_originals.get():
-                    #     os.remove(src)
+                else:
+                    dest = os.path.join(song_path, f"{a_id}.{audio_ext}")
+                    if audio_ext == "mp3":
+                        print("Converting {a_id} to MP3...")
+                        ffmpeg.input(src).output(dest, audio_bitrate="320k").run()
+                    else:
+                        ffmpeg.input(src).output(dest, audio_bitrate="192k").run()
 
+                    if ExportTab.instance.option_delete_originals.get():
+                        os.remove(src)
         except KeyError:
             alerts.append(f"Audio file not found for {DifficultyName(i).name}")
 

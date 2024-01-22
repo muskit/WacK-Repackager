@@ -111,7 +111,7 @@ def export_song(song: SongMetadata):
             alerts.append(f"Audio file not found for {DifficultyName(i).name}")
 
         # copy video file
-        if diff.video != None:
+        if diff.video != None and not ExportTab.instance.option_exclude_videos.get():
             dest = os.path.join(song_path, os.path.basename(diff.video))
             if not os.path.exists(dest):
                 shutil.copy2(diff.video, dest)

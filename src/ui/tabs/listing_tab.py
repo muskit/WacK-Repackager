@@ -206,9 +206,7 @@ class ListingTab(Frame):
         else:
             self.__table_rev_sort = False
 
-        print(col)
         if col == "#2":
-            print("sorting by rubi")
             rows.sort(
                 reverse=self.__table_rev_sort, key=lambda it: db.metadata[it[1]].rubi
             )

@@ -7,7 +7,7 @@ from typing import Any
 import ffmpeg
 
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from tkinter.ttk import *
 from PIL import ImageTk
 
@@ -241,7 +241,6 @@ class ExportTab(Frame):
                             )
                             self.treeview.selection_add(msg[1])
                     case "finished":
-                        # TODO?: finished sound
                         self.__export_end()
         except Empty:
             pass
@@ -346,10 +345,16 @@ class ExportTab(Frame):
         self.__pbar_val.set(0)
         self.refresh()
 
-    def __export_end(self, *_):
+    def __export_end(self, event=None):
         self.__btn_export.configure(
             text="Reset", command=self.__action_reset, state=NORMAL
         )
+
+        if event is None:
+            messagebox.showinfo("Export Complete", "Export complete.")
+        else:
+            messagebox.showwarning("Export Aborted", "Export aborted.")
+
         # TODO: abort export work threads if active
 
     def start_export_thread(self):

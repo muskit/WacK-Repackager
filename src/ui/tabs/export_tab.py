@@ -214,7 +214,12 @@ class ExportTab(Frame):
 
         export_msg_container = LabelFrame(self.left_container, text="Warnings/Errors")
         export_msg_container.pack(fill=BOTH, expand=True, padx=5, pady=10)
-        self.lbl_messages = Label(export_msg_container, text="Lorem ipsum", anchor=NW)
+        self.lbl_messages = Message(
+            export_msg_container,
+            width=220,
+            text="Hover over a song to see its messages from exporting.",
+            anchor=NW,
+        )
         self.lbl_messages.pack(anchor="w", padx=5, fill=BOTH, expand=True)
         f = tkFont.nametofont("TkDefaultFont").actual()
         self.lbl_song_stats = Label(
@@ -331,13 +336,19 @@ class ExportTab(Frame):
 
     def __action_table_hover(self, event):
         id = self.treeview.identify_row(event.y)
-        # TODO
+        if id == "":
+            return
+
+        txt = f"[{id}]\n"
         if id in self.song_alerts:
-            # show tooltip
-            pass
+            for m in self.song_alerts[id]:
+                txt += f" • {m}\n"
+            self.lbl_messages.configure(text=txt)
+        elif id in self.song_errors:
+            txt += f"Error: {self.song_errors[id]}"
+            self.lbl_messages.configure(text=txt)
         else:
-            # clear tooltip if exists
-            pass
+            self.lbl_messages.configure(text=f"{txt}No messages.")
 
     ## EXPORT BUTTON ACTIONS ##
     def __action_export(self, *_):
@@ -351,6 +362,7 @@ class ExportTab(Frame):
         self.__btn_browse.configure(state=DISABLED)
         self.__entry_path.configure(state=DISABLED)
         disable_children_widgets(self.left_container)
+        enable_children_widgets(self.lbl_messages.master)
 
         for id in self.treeview.get_children():
             self.songs_queue.put(id)
@@ -452,7 +464,6 @@ class ExportTab(Frame):
                         print(f"\t{a}")
                     self.song_alerts[id] = alerts
             except Empty:
-                print("Nothing left in the queue!")
                 break
 
     def set_pbar(self, step: int = None, prog: int = None, maximum: int = None):

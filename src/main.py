@@ -13,5 +13,8 @@ def main():
 
 
 if __name__ == "__main__":
+    for f in os.listdir("."):
+        print(f)
+
     # Assume app is being run at the project root.
     main()

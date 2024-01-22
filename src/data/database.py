@@ -7,9 +7,9 @@ from typing import Callable
 from PIL import Image
 
 import config
+from util import awb_index, resource_path, song_id_from_int
 from ui.data_setup import TaskProgress, TaskState
 from ui.tabs.listing_tab import ListingTab
-from util import awb_index, song_id_from_int
 from .metadata import Difficulty, DifficultyName, SongMetadata
 
 ## NOTE: ID KEYS ARE HYPHENATED
@@ -267,8 +267,8 @@ def init_songs(progress: TaskProgress):
 
 
 def __init_audio_index(progress: TaskProgress):
-    csv_path = os.path.abspath(os.path.join(os.path.curdir, "awb.csv"))
-    print(f"Creating audio index from {csv_path}...")
+    csv_path = resource_path("assets/awb.csv")
+    print(f"Creating audio index for Reverse 3.07...")
 
     audio_index.clear()
     with open(csv_path) as f:

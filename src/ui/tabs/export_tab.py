@@ -311,7 +311,7 @@ class ExportTab(Frame):
 
     def __action_table_hover(self, event):
         id = self.treeview.identify_row(event.y)
-
+        # TODO
         if id in self.alerts:
             # show tooltip
             pass

@@ -10,14 +10,15 @@ import tkinter.font as tkFont
 
 from PIL import Image, ImageTk
 
+from util import resource_path
 import data.database as db
 from data.metadata import *
 
 
 class MetadataPanel(Frame):
-    img_jacket_placeholder = Image.open("./assets/jacket-placeholder.png").resize(
-        (200, 200)
-    )
+    img_jacket_placeholder = Image.open(
+        resource_path("assets/jacket-placeholder.png")
+    ).resize((200, 200))
 
     def __init__(self, master):
         super().__init__(master, width=220, relief=GROOVE)

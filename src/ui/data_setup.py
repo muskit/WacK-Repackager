@@ -13,6 +13,7 @@ from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import *
 from PIL import Image, ImageTk
 
+from util import resource_path
 import config
 from data import database
 from .tabs.listing_tab import ListingTab
@@ -28,17 +29,21 @@ class TaskState(Enum):
 class ProgressIcon(Frame):
     image = {
         "progress": [
-            Image.open("./assets/indeterminate_spinner.png")
+            Image.open(resource_path("assets/indeterminate_spinner.png"))
             .convert("RGBA")
             .rotate(360 * (-i / 12))
             .resize((20, 20))
             for i in range(12)
         ],
-        "complete": Image.open("./assets/task_complete.png")
+        "complete": Image.open(resource_path("assets/task_complete.png"))
         .convert("RGBA")
         .resize((20, 20)),
-        "alert": Image.open("./assets/task_alert.png").convert("RGBA").resize((20, 20)),
-        "error": Image.open("./assets/task_error.png").convert("RGBA").resize((20, 20)),
+        "alert": Image.open(resource_path("assets/task_alert.png"))
+        .convert("RGBA")
+        .resize((20, 20)),
+        "error": Image.open(resource_path("assets/task_error.png"))
+        .convert("RGBA")
+        .resize((20, 20)),
     }
 
     def __init__(self, master, init_status=TaskState.InProgress):

@@ -70,7 +70,7 @@ class ExportTab(Frame):
         self.option_convert_audio.trace_add("write", self.__action_audio_conv_change)
         self.option_audio_target = StringVar(self, AudioConvertTarget.MP3)
         self.option_exclude_videos = BooleanVar(self)
-        self.option_threads = IntVar(self, 1)
+        self.option_threads = IntVar(self, 4)
 
         self.__init_widgets()
         self.after(200, self.__event_queue_process)

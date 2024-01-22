@@ -112,9 +112,13 @@ def export_song(song: SongMetadata):
                     dest = os.path.join(song_path, f"{a_id}.{audio_ext}")
                     if audio_ext == "mp3":
                         print("Converting {a_id} to MP3...")
-                        ffmpeg.input(src).output(dest, audio_bitrate="320k").run()
+                        ffmpeg.input(src).output(
+                            dest, audio_bitrate="320k", loglevel="warning"
+                        ).run()
                     else:
-                        ffmpeg.input(src).output(dest, audio_bitrate="192k").run()
+                        ffmpeg.input(src).output(
+                            dest, audio_bitrate="192k", loglevel="warning"
+                        ).run()
 
                     if ExportTab.instance.option_delete_originals.get():
                         os.remove(src)

@@ -51,14 +51,14 @@ class ExportTab(Frame):
 
         # progress tracking
         self.songs_queue: Queue[str] = Queue(maxsize=400)
-        self.songs_finished = set()
         self.__pbar_val = IntVar(self, 0)
         self.progress_image = {
             "success": ImageTk.PhotoImage(data_setup.ProgressIcon.image["complete"]),
             "alert": ImageTk.PhotoImage(data_setup.ProgressIcon.image["alert"]),
             "error": ImageTk.PhotoImage(data_setup.ProgressIcon.image["error"]),
         }
-        self.alerts: dict[str, list[str]] = dict()
+        self.song_alerts: dict[str, list[str]] = dict()
+        self.song_errors: dict[str, str] = dict()
 
         # export options
         self.option_game_subfolders = BooleanVar(self)
@@ -312,7 +312,7 @@ class ExportTab(Frame):
     def __action_table_hover(self, event):
         id = self.treeview.identify_row(event.y)
         # TODO
-        if id in self.alerts:
+        if id in self.song_alerts:
             # show tooltip
             pass
         else:
@@ -335,7 +335,8 @@ class ExportTab(Frame):
         for id in self.treeview.get_children():
             self.songs_queue.put(id)
 
-        self.alerts.clear()
+        self.song_alerts.clear()
+        self.song_errors.clear()
         self.start_export_thread()
 
     def __action_reset(self, *_):
@@ -359,8 +360,10 @@ class ExportTab(Frame):
             text="Reset", command=self.__action_reset, state=NORMAL
         )
 
+        stats = f"Exported {len(self.songs_finished)} songs"
+
         if not abort:
-            messagebox.showinfo("Export Complete", "Export complete.")
+            messagebox.showinfo("Export Complete", f"Exported complete!")
         else:
             messagebox.showwarning("Export Aborted", "Export aborted.")
 
@@ -400,17 +403,24 @@ class ExportTab(Frame):
 
                 song = db.metadata[id]
                 print(f"Exporting {id} ({song.artist} - {song.name})...")
-                alert = export_song(song)
+                try:
+                    alert = export_song(song)
+                except Exception as e:
+                    print(f"Error exporting {id}: {e}")
+                    self.song_errors[id] = str(e)
+                    self.ui_queue.put_nowait(("table_status", id, "error"))
+                    continue
+
                 if len(alert) == 0:
                     # no issues
                     self.ui_queue.put_nowait(("table_status", id, "success"))
                     self.ui_queue.put_nowait(("p_bar", 1, None, total))
                 else:
                     self.ui_queue.put_nowait(("table_status", id, "alert"))
-                    print(f"{len(alert)} export warnings")
+                    print(f"Exported with warnings:")
                     for a in alert:
                         print(f"\t{a}")
-                    self.alerts[id] = alert
+                    self.song_alerts[id] = alert
             except Empty:
                 print("Nothing left in the queue!")
                 break

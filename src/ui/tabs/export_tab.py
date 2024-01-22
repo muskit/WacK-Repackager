@@ -1,17 +1,23 @@
 from __future__ import annotations
 
 from enum import IntEnum, StrEnum
+from queue import Queue, Empty
+from threading import Thread
+from typing import Any
 import ffmpeg
 
 from tkinter import *
 from tkinter import filedialog
 from tkinter.ttk import *
+from PIL import ImageTk
 
+from util import *
 import config
 import data.database as db
 import data.metadata as md
-from util import *
+from ui import data_setup
 from .listing_tab import ListingTab
+from export import export_song
 
 
 class ExportGroup(IntEnum):
@@ -30,23 +36,41 @@ class ExportTab(Frame):
 
     def __init__(self, master):
         ExportTab.instance = self
+
+        self.ui_queue: Queue[(str, Any)] = Queue()
+        self.__cur_export_thread: Thread = None
+
         super().__init__(master)
+
         self.export_path = StringVar(self, config.export_path)
         self.export_path.trace_add("write", self.__action_path_change)
-
         self.export_group = IntVar(self, 0)
         self.export_group.trace_add("write", self.__refresh_exports_table)
         self.working = False
+        self.just_finished = False
 
-        # bool options
+        # progress tracking
+        self.songs_queue: Queue[str] = Queue(maxsize=400)
+        self.songs_finished = set()
+        self.__pbar_val = IntVar(self, 0)
+        self.progress_image = {
+            "success": ImageTk.PhotoImage(data_setup.ProgressIcon.image["complete"]),
+            "alert": ImageTk.PhotoImage(data_setup.ProgressIcon.image["alert"]),
+            "error": ImageTk.PhotoImage(data_setup.ProgressIcon.image["error"]),
+        }
+        self.alerts: dict[str, list[str]] = dict()
+
+        # export options
         self.option_game_subfolders = BooleanVar(self)
         self.option_delete_originals = BooleanVar(self)
         self.option_convert_audio = BooleanVar(self)
         self.option_convert_audio.trace_add("write", self.__action_audio_conv_change)
         self.option_audio_target = StringVar(self, AudioConvertTarget.MP3)
         self.option_exclude_videos = BooleanVar(self)
+        self.option_threads = IntVar(self, 1)
 
         self.__init_widgets()
+        self.after(200, self.__event_queue_process)
 
     def __init_widgets(self):
         ## RIGHT SIDE (export) ##
@@ -62,12 +86,16 @@ class ExportTab(Frame):
             export_top,
             yscrollcommand=tv_scr.set,
             columns=("id", "title", "artist", "game"),
+            selectmode="none",
         )
         tv_scr.configure(command=self.treeview.yview)
         tv_scr.pack(fill=Y, side=RIGHT)
         self.treeview.pack(fill=BOTH, expand=True, side=LEFT)
+        # self.treeview.tag_configure("oddrow", background="#f0f0ff")
+        self.treeview.tag_configure("done", foreground="#bbbbbb")
+        self.treeview.bind("<Motion>", self.__action_table_hover)
 
-        self.treeview.column("#0", width=0, stretch=False)
+        self.treeview.column("#0", width=75, stretch=False)
         self.treeview.heading("id", text="ID", anchor=CENTER)
         self.treeview.column("id", width=75, stretch=False, anchor=CENTER)
         self.treeview.heading("title", text="Song Name", anchor=W)
@@ -95,7 +123,10 @@ class ExportTab(Frame):
         self.right_container = Frame(export_btm)
         self.right_container.pack(fill=X, expand=True, side=RIGHT, pady=(13, 0))
         self.__pbar_export = Progressbar(
-            self.right_container, orient=HORIZONTAL, length=100
+            self.right_container,
+            orient=HORIZONTAL,
+            mode="determinate",
+            variable=self.__pbar_val,
         )
         self.__pbar_export.pack(side=LEFT, fill=X, expand=True, padx=(10, 3))
 
@@ -152,7 +183,7 @@ class ExportTab(Frame):
             values=[s.value for s in AudioConvertTarget],
             textvariable=self.option_audio_target,
         )
-        self.combobox_audio_conv_target.pack()
+        self.combobox_audio_conv_target.pack(pady=(0, 5))
 
         Checkbutton(
             self.left_container,
@@ -172,6 +203,99 @@ class ExportTab(Frame):
             variable=self.option_delete_originals,
         ).pack(anchor="w", padx=5)
 
+        threads_container = Frame(self.left_container)
+        threads_container.pack(fill=X, padx=(5, 15), pady=(10, 20))
+        Label(threads_container, text="Threads").pack(anchor="w", padx=5)
+        Entry(threads_container, textvariable=self.option_threads, width=8).pack(
+            side=LEFT, padx=5
+        )
+
+    def __event_queue_process(self):
+        try:
+            while True:
+                msg = self.ui_queue.get_nowait()
+                match msg[0]:
+                    case "p_bar":
+                        # msg[1]: int (step)
+                        # msg[2]: int (prog)
+                        # msg[3]: int (max)
+                        self.set_pbar(msg[1], msg[2], msg[3])
+                    case "table_status":
+                        # msg[1]: str (id)
+                        # msg[2]: str ("working", "success", "alert", "error")
+                        if msg[2] != "working":
+                            self.treeview.item(
+                                msg[1],
+                                tags="done",
+                                image=self.progress_image[msg[2]],
+                                text="",
+                            )
+                            self.treeview.selection_remove(msg[1])
+                        else:
+                            self.treeview.item(
+                                msg[1],
+                                text="WORKING...",
+                                tags=None,
+                                image=None,
+                            )
+                            self.treeview.selection_add(msg[1])
+                    case "finished":
+                        # TODO?: finished sound
+                        self.__export_end()
+        except Empty:
+            pass
+
+        self.after(200, self.__event_queue_process)
+
+    def __refresh_exports_table(self, *_):
+        self.treeview.delete(*self.treeview.get_children())
+
+        match self.export_group.get():
+            case ExportGroup.ALL:
+                for i, song in enumerate(db.metadata.values()):
+                    self.treeview.insert(
+                        "",
+                        "end",
+                        iid=song.id,
+                        tags=("oddrow" if i % 2 == 1 else ""),
+                        values=(
+                            song.id,
+                            song.name,
+                            song.artist,
+                            md.version_to_game[song.version],
+                        ),
+                    )
+            case ExportGroup.SELECTED:
+                for i, id in enumerate(ListingTab.instance.treeview.selection()):
+                    song = db.metadata[id]
+                    self.treeview.insert(
+                        "",
+                        "end",
+                        tags=("oddrow" if i % 2 == 1 else ""),
+                        iid=song.id,
+                        values=(
+                            song.id,
+                            song.name,
+                            song.artist,
+                            md.version_to_game[song.version],
+                        ),
+                    )
+            case ExportGroup.FILTERED:
+                for i, id in enumerate(ListingTab.instance.treeview.get_children()):
+                    song = db.metadata[id]
+                    self.treeview.insert(
+                        "",
+                        "end",
+                        tags=("oddrow" if i % 2 == 1 else ""),
+                        iid=song.id,
+                        values=(
+                            song.id,
+                            song.name,
+                            song.artist,
+                            md.version_to_game[song.version],
+                        ),
+                    )
+
     def __action_path_change(self, *_):
         config.export_path = self.export_path.get()
 
@@ -185,76 +309,112 @@ class ExportTab(Frame):
             state="readonly" if self.option_convert_audio.get() else DISABLED
         )
 
+    def __action_table_hover(self, event):
+        id = self.treeview.identify_row(event.y)
+
+        if id in self.alerts:
+            # show tooltip
+            pass
+        else:
+            # clear tooltip if exists
+            pass
+
+    ## EXPORT BUTTON ACTIONS ##
     def __action_export(self, *_):
         self.working = True
 
         # disable widgets
-        self.__btn_export.configure(text="Abort", command=self.__action_abort_export)
+        # TODO: rename to "Abort" and change command to __export_end
+        self.__btn_export.configure(text="Exporting", command=None, state=DISABLED)
         self.__btn_browse.configure(state=DISABLED)
         self.__entry_path.configure(state=DISABLED)
         disable_children_widgets(self.left_container)
 
-        # TODO: start export thread
+        for id in self.treeview.get_children():
+            self.songs_queue.put(id)
 
-    def __action_abort_export(self, *_):
-        self.__btn_export.configure(text="Reset", command=self.__action_reset)
-        # TODO: abort export thread
+        self.alerts.clear()
+        self.start_export_thread()
 
     def __action_reset(self, *_):
-        self.working = False
-
+        self.just_finished = False
         self.__btn_export.configure(text="Export", command=self.__action_export)
-        # TODO: reset widgets
+        enable_children_widgets(self.left_container)
+        self.__btn_browse.configure(state=NORMAL)
+        self.__entry_path.configure(state=NORMAL)
+        self.__pbar_val.set(0)
+        self.refresh()
 
-    def __refresh_exports_table(self, *_):
-        self.treeview.delete(*self.treeview.get_children())
+    def __export_end(self, *_):
+        self.__btn_export.configure(
+            text="Reset", command=self.__action_reset, state=NORMAL
+        )
+        # TODO: abort export work threads if active
 
-        match self.export_group.get():
-            case ExportGroup.ALL:
-                for song in db.metadata.values():
-                    self.treeview.insert(
-                        "",
-                        "end",
-                        id=song.id,
-                        values=(
-                            song.id,
-                            song.name,
-                            song.artist,
-                            md.version_to_game[song.version],
-                        ),
-                    )
-            case ExportGroup.SELECTED:
-                for id in ListingTab.instance.treeview.selection():
-                    song = db.metadata[id]
-                    self.treeview.insert(
-                        "",
-                        "end",
-                        id=song.id,
-                        values=(
-                            song.id,
-                            song.name,
-                            song.artist,
-                            md.version_to_game[song.version],
-                        ),
-                    )
-            case ExportGroup.FILTERED:
-                for id in ListingTab.instance.treeview.get_children():
-                    song = db.metadata[id]
-                    self.treeview.insert(
-                        "",
-                        "end",
-                        id=song.id,
-                        values=(
-                            song.id,
-                            song.name,
-                            song.artist,
-                            md.version_to_game[song.version],
-                        ),
-                    )
+    def start_export_thread(self):
+        """Export thread starter"""
+        if self.__cur_export_thread is not None:
+            self.__cur_export_thread.join()
+        self.__cur_export_thread = Thread(target=self.__export_thread)
+
+        self.__cur_export_thread.start()
+
+    def __export_thread(self):
+        # create worker threads
+        work_threads = []
+        for i in range(self.option_threads.get()):
+            t = Thread(target=self.__export_thread_worker)
+            t.start()
+            work_threads.append(t)
+
+        # wait for worker threads to finish
+        for t in work_threads:
+            t.join()
+
+        print("Export thread finished")
+        self.working = False
+        self.just_finished = True
+        self.ui_queue.put_nowait(("finished",))
+
+    def __export_thread_worker(self):
+        total = len(self.treeview.get_children())
+        while True:
+            try:
+                id = self.songs_queue.get(block=False)
+                self.ui_queue.put_nowait(("table_status", id, "working"))
+
+                song = db.metadata[id]
+                print(f"Exporting {id} ({song.artist} - {song.name})...")
+                alert = export_song(song)
+                if len(alert) == 0:
+                    # no issues
+                    self.ui_queue.put_nowait(("table_status", id, "success"))
+                    self.ui_queue.put_nowait(("p_bar", 1, None, total))
+                else:
+                    self.ui_queue.put_nowait(("table_status", id, "alert"))
+                    print(f"{len(alert)} export warnings")
+                    for a in alert:
+                        print(f"\t{a}")
+                    self.alerts[id] = alert
+            except Empty:
+                print("Nothing left in the queue!")
+                break
+
+    def set_pbar(self, step: int = None, prog: int = None, maximum: int = None):
+        if maximum is not None:
+            self.__pbar_export["max"] = maximum
+
+        if prog is not None:
+            self.__pbar_val.set(prog)
+
+        if step is not None:
+            self.__pbar_val.set(self.__pbar_val.get() + step)
+
+        print(f"pbar: {self.__pbar_val.get()}/{self.__pbar_export['max']}")
 
     def refresh(self):
         """Called upon tab being visible."""
-        if self.working:
+        if (self.working) or (not self.working and self.just_finished):
             return
 
         if ListingTab.instance.filter_game.get() == "None":

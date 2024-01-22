@@ -43,6 +43,24 @@ def disable_children_widgets(widget: Widget):
             disable_children_widgets(child)
         else:
             try:
+                child.original_state = child.cget("state")
                 child.configure(state="disable")
             except:
                 pass
+
+
+def enable_children_widgets(widget: Widget):
+    """Re-enable all nested children widgets that were disabled using \"disable_children_widgets.\" """
+    for child in widget.winfo_children():
+        if len(child.winfo_children()) > 0:
+            enable_children_widgets(child)
+        else:
+            try:
+                child.configure(state=child.original_state)
+            except:
+                pass
+
+
+def sanitize(file_name: str):
+    blacklist = ["\\", "/", ":", "*", "?", '"', "'", "<", ">", "|"]
+    return "".join([x if x not in blacklist else "_" for x in file_name])

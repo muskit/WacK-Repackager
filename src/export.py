@@ -1,13 +1,13 @@
 import os
+from queue import Empty, Queue
 import shutil
 from pathlib import Path
 
-from util import file_exists
+from util import *
 
 import config
 from data.database import *
 from data.metadata import *
-from ui.tabs.export_tab import ExportTab
 
 
 def meta_mer(song: SongMetadata) -> str:
@@ -56,13 +56,17 @@ def diff_mer(mer: str, diff: Difficulty, audio_ext: str) -> str:
 
 
 def export_song(song: SongMetadata):
-    """Export a song to the export path."""
+    """Export a song to configured export path."""
     from data.database import audio_file
+    from ui.tabs.export_tab import ExportTab
+
+    alerts = []
 
     out = config.export_path
     if ExportTab.instance.option_game_subfolders.get():
         out = os.path.join(out, version_to_game[song.version])
 
+    # desired audio extension from UI
     audio_ext = (
         ExportTab.instance.combobox_audio_conv_target.get()
         if ExportTab.instance.option_convert_audio.get()
@@ -70,7 +74,7 @@ def export_song(song: SongMetadata):
     )
 
     # create song folder
-    song_path = os.path.join(out, f"{song.artist} - {song.name}")
+    song_path = os.path.join(out, sanitize(f"{song.artist} - {song.name}"))
     if not os.path.exists(song_path):
         Path(song_path).mkdir(parents=True, exist_ok=True)
 
@@ -90,24 +94,26 @@ def export_song(song: SongMetadata):
             continue
 
         # copy/convert audio named after song id if file doesn't exist
-        a_id = diff.audio_id
-        if audio_ext == "wav":
-            search_regex = f"{a_id}.wav$"
-            if not file_exists(song_path, search_regex):
-                src = audio_file[a_id]
-                dest = os.path.join(song_path, f"{a_id}.wav")
-                shutil.copy2(src, dest)
-        else:
-            search_regex = f"{a_id}.{audio_ext}$"
-            if not file_exists(song_path, search_regex):
-                # TODO: convert to target format
-                pass
+        try:
+            a_id = diff.audio_id
+            if audio_ext == "wav":
+                search_regex = f"{a_id}.wav$"
+                if not file_exists(song_path, search_regex):
+                    src = audio_file[a_id]
+                    dest = os.path.join(song_path, f"{a_id}.wav")
+                    shutil.copy2(src, dest)
+            else:
+                search_regex = f"{a_id}.{audio_ext}$"
+                if not file_exists(song_path, search_regex):
+                    # TODO: convert to target format
+                    alerts.append("Audio conversion not yet implemented")
+        except KeyError:
+            alerts.append(f"Audio file not found for {DifficultyName(i).name}")
 
         # copy video file
         if diff.video != None:
             dest = os.path.join(song_path, os.path.basename(diff.video))
             if not os.path.exists(dest):
-                print(diff.video)
                 shutil.copy2(diff.video, dest)
 
         # copy chart file with WacK-specific meta tags
@@ -124,15 +130,4 @@ def export_song(song: SongMetadata):
         with open(dest, "w", encoding="utf-8") as f:
             f.write(out)
 
-
-def export_selection_task(progress):
-    """Export all selected songs from UI."""
-    total = len(ExportTab.instance.treeview.selection())
-    progress.pbar_set(prog=0, maximum=total)
-
-    for id in ExportTab.instance.treeview.selection():
-        song = metadata[id]
-        export_song(song)
-        progress.pbar_set(step=1, maximum=total)
-
-    progress.status_set(TaskState.Complete)
+    return alerts

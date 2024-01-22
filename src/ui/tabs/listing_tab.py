@@ -120,9 +120,25 @@ class ListingTab(Frame):
             values=["None"] + list(game_to_version.keys()),
             textvariable=self.filter_game,
         ).pack(side=LEFT, pady=(2, 0), padx=2)
+        f = tkFont.nametofont("TkDefaultFont").actual()
+        f["slant"] = "italic"
+        self.lbl_selected = Label(
+            filter_container,
+            text="0/0 songs selected",
+            font=(f["family"] + " Italic", f["size"], ""),
+        )
+        self.lbl_selected.pack(side=RIGHT, padx=2)
 
-        self.md_panel = MetadataPanel(self)
-        self.md_panel.pack(fill="both", side=RIGHT, expand=False)
+        ## Right Half
+        right_container = Frame(self)
+        right_container.pack(fill=BOTH, side=RIGHT, expand=False)
+        self.md_panel = MetadataPanel(right_container)
+        self.md_panel.pack(fill=BOTH, expand=True, side=TOP)
+        Button(
+            right_container,
+            text="To Exports    →",
+            command=lambda: self.master.select(1),
+        ).pack(fill=X, side=BOTTOM)
 
     def __on_table_click(self, event):
         """Handle clicks on the table."""
@@ -139,6 +155,13 @@ class ListingTab(Frame):
             return
         id = self.treeview.selection()[-1]
         self.md_panel.set_song(db.metadata[id])
+        self.refresh_lbl_selected()
+
+    def refresh_lbl_selected(self):
+        """Refresh the label that shows how many songs are selected."""
+        self.lbl_selected.configure(
+            text=f"{len(self.treeview.selection())}/{len(self.treeview.get_children())} songs selected"
+        )
 
     def refresh_jacket_previews(self):
         """Refresh the jacket previews."""
@@ -168,6 +191,7 @@ class ListingTab(Frame):
             )
 
         self.table_sort("id")
+        self.refresh_lbl_selected()
 
     def table_sort(self, col: str):
         """Sort the table by a column."""
@@ -181,7 +205,14 @@ class ListingTab(Frame):
         else:
             self.__table_rev_sort = False
 
-        rows.sort(reverse=self.__table_rev_sort)
+        print(col)
+        if col == "#2":
+            print("sorting by rubi")
+            rows.sort(
+                reverse=self.__table_rev_sort, key=lambda it: db.metadata[it[1]].rubi
+            )
+        else:
+            rows.sort(reverse=self.__table_rev_sort)
 
         for index, (values, item) in enumerate(rows):
             self.treeview.move(item, "", index)

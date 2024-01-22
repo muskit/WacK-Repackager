@@ -17,9 +17,6 @@ import config
 from data import database
 from .tabs.listing_tab import ListingTab
 
-# TODO: for test export
-from export import export_song
-
 
 class TaskState(Enum):
     InProgress = 0
@@ -319,7 +316,3 @@ class DataSetupWindow(Toplevel):
         self.log("")
         print("Tasks thread finished")
         self.event_queue.put_nowait(("working", False))
-
-        # TODO: test export
-        export_song(database.metadata["S03-030"])
-        export_song(database.metadata["S02-021"])

@@ -3,34 +3,29 @@ This is a guide to populating the `data` working folder in this project's direct
 
 **This project will only repack audio on Reverse 3.07 properly.**
 
-## Table of Contents
-1. [Metadata](#metadata-datametadatajson)
-2. [Charts](#charts-datamusicdata)
-3. [Videos](#videos-long)
-4. [Song Audio](#song-audio-datamer_bgm)
-5. [Jackets](#jackets)
+## Table of Contents (sorted by descending time consumption)
+1. [Videos](#videos-datamovies)
+2. [Song Audio](#song-audio-datamer_bgm)
+3. [Metadata](#metadata-datametadatajson)
+4. [Jackets](#jackets)
+5. [Charts](#charts-datamusicdata)
 
-## Metadata (`data/metadata.json`)
-1. Grab the latest [UAssetGUI](https://github.com/atenfyr/UAssetGUI).
-2. Open `<WACCA>/app/WindowsNoEditor/Mercury/Content/Table/MusicParameterTable.uasset` with UAssetGUI.
-3. In the toolbar, go to `File > Save As`.
-4. Save it as a `UAssetAPI JSON` file in `data/metadata.json`.
+## Videos (`data/movies`)
+*~4.1 GB*
 
-We're done with UAssetGUI now. Feel free to close it.
+If you want to export music videos, the process for doing so involves a **lot** of waiting. Therefore it is recommended to run this in the background while you do the other processes.
 
-## Charts (`data/MusicData`)
-Simply copy the `<WACCA>/app/WindowsNoEditor/Mercury/Content/MusicData` folder into `data`.
-
-## Videos (LONG)
 You will need [ffmpeg](https://www.ffmpeg.org/download.html) installed and on PATH.
 
 1. Set the paths in `convert-videos.bat` as needed:
-    - `video_path` to the folder which contains .usm video files
+    - `video_path` to `<WACCA>/app/WindowsNoEditor/Mercury/Content/Movie`
     - `export_path` to `data/movies`
 2. Run `convert-videos.bat` to convert all .usm videos to .mp4 in your working folder.
-    - This script will take a **very** long time to finish. I recommend running this in the background while you proceed to the next sections.
+    - This script will take a **very** long time to finish. As mentioned earlier, I recommend running this in the background while you proceed to the next sections.
 
 ## Song Audio (`data/MER_BGM`)
+*~18.8 GB for WAVs*
+
 Due to the audio indexing data in this project only done for **Reverse 3.07**, these steps will only work for game files of that version.
 
 You will need the latest version of [Audio Cue Editor (ACE)](https://github.com/LazyBone152/ACE).
@@ -63,7 +58,18 @@ For each of the files below located in `<WACCA>/app/WindowsNoEditor/Mercury/Cont
 | MER_BGM_V3_06.awb | 06                |
 | MER_BGM_V3_07.awb | 07                |
 
+## Metadata (`data/metadata.json`)
+*~5.6 MB*
+
+You will need the latest [UAssetGUI](https://github.com/atenfyr/UAssetGUI).
+
+1. Open `<WACCA>/app/WindowsNoEditor/Mercury/Content/Table/MusicParameterTable.uasset` with UAssetGUI.
+2. In the toolbar, go to `File > Save As`.
+3. Save it as a `UAssetAPI JSON` file in `data/metadata.json`.
+
 ## Jackets
+*~54.4 MB*
+
 For this, you will need [Unreal Engine resource viewer](https://www.gildor.org/en/projects/umodel)
 
 1. Run `umodel_64.exe` and configure its Startup Options.
@@ -73,3 +79,7 @@ For this, you will need [Unreal Engine resource viewer](https://www.gildor.org/e
 2. In the left panel, right click on "All packages," then click on "Export folder content."
     - Under "Texture Export," set format to PNG, and the path to `data/jackets`.
     - Click OK to begin exporting jacket images.
+
+## Charts (`data/MusicData`)
+*~59.5 MB*
+Simply copy the `<WACCA>/app/WindowsNoEditor/Mercury/Content/MusicData` folder into `data`.

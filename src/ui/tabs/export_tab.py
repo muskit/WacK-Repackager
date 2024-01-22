@@ -241,7 +241,7 @@ class ExportTab(Frame):
                             )
                             self.treeview.selection_add(msg[1])
                     case "finished":
-                        self.__export_end()
+                        self.__export_end(abort=False)
         except Empty:
             pass
 
@@ -324,8 +324,10 @@ class ExportTab(Frame):
         self.working = True
 
         # disable widgets
-        # TODO: rename to "Abort" and change command to __export_end
-        self.__btn_export.configure(text="Exporting", command=None, state=DISABLED)
+        # TODO: rename to "Abort" and enable
+        self.__btn_export.configure(
+            text="Exporting", command=self.__action_abort, state=DISABLED
+        )
         self.__btn_browse.configure(state=DISABLED)
         self.__entry_path.configure(state=DISABLED)
         disable_children_widgets(self.left_container)
@@ -345,12 +347,19 @@ class ExportTab(Frame):
         self.__pbar_val.set(0)
         self.refresh()
 
-    def __export_end(self, event=None):
+    def __action_abort(self, *_):
+        if messagebox.askokcancel(
+            "Abort Export?",
+            "Are you sure you want to abort the export?",
+        ):
+            self.__export_end(abort=True)
+
+    def __export_end(self, abort: bool):
         self.__btn_export.configure(
             text="Reset", command=self.__action_reset, state=NORMAL
         )
 
-        if event is None:
+        if not abort:
             messagebox.showinfo("Export Complete", "Export complete.")
         else:
             messagebox.showwarning("Export Aborted", "Export aborted.")

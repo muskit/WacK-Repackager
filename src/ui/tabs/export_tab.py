@@ -46,8 +46,10 @@ class ExportTab(Frame):
         self.export_path.trace_add("write", self.__action_path_change)
         self.export_group = IntVar(self, 0)
         self.export_group.trace_add("write", self.__refresh_exports_table)
+
         self.working = False
         self.just_finished = False
+        self.aborting = False
 
         # progress tracking
         self.songs_queue: Queue[str] = Queue(maxsize=400)
@@ -259,7 +261,7 @@ class ExportTab(Frame):
                             )
                             self.treeview.selection_add(msg[1])
                     case "finished":
-                        self.__export_end(abort=False)
+                        self.__export_end()
                 self.__refresh_song_stats()
         except Empty:
             pass
@@ -355,10 +357,7 @@ class ExportTab(Frame):
         self.working = True
 
         # disable widgets
-        # TODO: rename to "Abort" and enable
-        self.__btn_export.configure(
-            text="Exporting", command=self.__action_abort, state=DISABLED
-        )
+        self.__btn_export.configure(text="Abort", command=self.__action_abort)
         self.__btn_browse.configure(state=DISABLED)
         self.__entry_path.configure(state=DISABLED)
         disable_children_widgets(self.left_container)
@@ -384,13 +383,12 @@ class ExportTab(Frame):
         self.refresh()
 
     def __action_abort(self, *_):
-        if messagebox.askokcancel(
+        self.aborting = messagebox.askokcancel(
             "Abort Export?",
             "Are you sure you want to abort the export?",
-        ):
-            self.__export_end(abort=True)
+        )
 
-    def __export_end(self, abort: bool):
+    def __export_end(self):
         self.__btn_export.configure(
             text="Reset", command=self.__action_reset, state=NORMAL
         )
@@ -401,12 +399,11 @@ class ExportTab(Frame):
             f"and {len(self.song_errors)} errors."
         )
 
-        if not abort:
-            messagebox.showinfo("Export Complete", stats)
-        else:
+        if self.aborting:
             messagebox.showwarning("Export Aborted", stats)
-
-        # TODO: abort export work threads if active
+            self.aborting = False
+        else:
+            messagebox.showinfo("Export Complete", stats)
 
     def start_export_thread(self):
         """Export thread starter"""
@@ -428,6 +425,7 @@ class ExportTab(Frame):
         for t in work_threads:
             t.join()
 
+        work_threads.clear()
         print("Export thread finished")
         self.working = False
         self.just_finished = True
@@ -435,7 +433,7 @@ class ExportTab(Frame):
 
     def __export_thread_worker(self):
         total = len(self.treeview.get_children())
-        while True:
+        while not self.aborting:
             try:
                 id = self.songs_queue.get(block=False)
                 self.ui_queue.put_nowait(("table_status", id, "working"))
@@ -456,15 +454,19 @@ class ExportTab(Frame):
                 if len(alerts) == 0:
                     # no issues
                     self.ui_queue.put_nowait(("table_status", id, "success"))
-                    self.ui_queue.put_nowait(("p_bar", 1, None, total))
                 else:
                     self.ui_queue.put_nowait(("table_status", id, "alert"))
                     print(f"Exported with warnings:")
                     for a in alerts:
                         print(f"\t{a}")
                     self.song_alerts[id] = alerts
+
+                self.ui_queue.put_nowait(("p_bar", 1, None, total))
             except Empty:
-                break
+                return
+
+        # here because self.aborted is True
+        print("Export has been aborted; ending worker thread...")
 
     def set_pbar(self, step: int = None, prog: int = None, maximum: int = None):
         if maximum is not None:

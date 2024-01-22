@@ -78,15 +78,17 @@ def export_song(song: SongMetadata):
     if not os.path.exists(song_path):
         Path(song_path).mkdir(parents=True, exist_ok=True)
 
-    # copy jacket
-    jacket_path = os.path.join(song_path, "jacket.png")
-    shutil.copy2(song.jacket, jacket_path)
-
     # create meta.mer
     meta = meta_mer(song)
     meta_path = os.path.join(song_path, "meta.mer")
     with open(meta_path, "w", encoding="utf-8") as f:
         f.write(meta)
+
+    # copy jacket
+    src_jacket = os.path.join(song_path, "jacket.png")
+    shutil.copy2(song.jacket, src_jacket)
+    if ExportTab.instance.option_delete_originals.get():
+        os.remove(src_jacket)
 
     # per-difficulty operations
     for i, diff in enumerate(song.difficulties):
@@ -102,11 +104,16 @@ def export_song(song: SongMetadata):
                     src = audio_file[a_id]
                     dest = os.path.join(song_path, f"{a_id}.wav")
                     shutil.copy2(src, dest)
+                    if ExportTab.instance.option_delete_originals.get():
+                        os.remove(src)
             else:
                 search_regex = f"{a_id}.{audio_ext}$"
                 if not file_exists(song_path, search_regex):
                     # TODO: convert to target format
                     alerts.append("Audio conversion not yet implemented")
+                    # if ExportTab.instance.option_delete_originals.get():
+                    #     os.remove(src)
+
         except KeyError:
             alerts.append(f"Audio file not found for {DifficultyName(i).name}")
 
@@ -115,6 +122,8 @@ def export_song(song: SongMetadata):
             dest = os.path.join(song_path, os.path.basename(diff.video))
             if not os.path.exists(dest):
                 shutil.copy2(diff.video, dest)
+                if ExportTab.instance.option_delete_originals.get():
+                    os.remove(diff.video)
 
         # copy chart file with WacK-specific meta tags
         src = os.path.join(
@@ -129,5 +138,8 @@ def export_song(song: SongMetadata):
 
         with open(dest, "w", encoding="utf-8") as f:
             f.write(out)
+
+        # if ExportTab.instance.option_delete_originals.get():
+        #     os.remove(src)
 
     return alerts

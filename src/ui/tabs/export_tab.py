@@ -200,12 +200,10 @@ class ExportTab(Frame):
             variable=self.option_game_subfolders,
         ).pack(anchor="w", padx=5)
 
-        # TODO: implement
         Checkbutton(
             self.left_container,
             text="Delete Original Files",
             variable=self.option_delete_originals,
-            state=DISABLED,
         ).pack(anchor="w", padx=5)
 
         threads_container = Frame(self.left_container)

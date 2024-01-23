@@ -124,7 +124,7 @@ class ListingTab(Frame):
         f = tkFont.nametofont("TkDefaultFont").actual()
         self.lbl_selected = Label(
             filter_container,
-            text="0/0 songs selected",
+            text="0/0 songs selected for export",
             font=(f["family"] + " Italic", f["size"], ""),
         )
         self.lbl_selected.pack(side=RIGHT, padx=2)
@@ -160,7 +160,10 @@ class ListingTab(Frame):
     def refresh_lbl_selected(self):
         """Refresh the label that shows how many songs are selected."""
         self.lbl_selected.configure(
-            text=f"{len(self.treeview.selection())}/{len(self.treeview.get_children())} songs selected"
+            text=(
+                f"{len(self.treeview.selection())}/{len(self.treeview.get_children())}"
+                f" song{"s" if len(self.treeview.selection()) != 1 else ""} selected for export"
+            )
         )
 
     def refresh_jacket_previews(self):

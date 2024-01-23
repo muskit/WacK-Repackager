@@ -31,7 +31,7 @@ class WelcomeWindow(Toplevel):
         Button(btn_container, text="Continue", command=self.__action_continue).pack(
             side="left"
         )
-        Button(btn_container, text="View HOWTO", command=self.__action_howto).pack(
+        Button(btn_container, text="Open HOWTO", command=self.__action_howto).pack(
             side="left"
         )
         if true_welcome:

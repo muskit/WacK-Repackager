@@ -8,6 +8,7 @@ import config
 
 from .data_setup import DataSetupWindow
 from .welcome_window import WelcomeWindow
+from .about import AboutWindow
 
 from .tabs.listing_tab import ListingTab
 from .tabs.export_tab import ExportTab
@@ -65,7 +66,9 @@ class MainWindow(Tk):
             ),
         )
         about_menu.add_separator()
-        about_menu.add_command(label="About", command=None)
+        about_menu.add_command(
+            label="About", command=lambda: self.show_and_focus_toplevel(AboutWindow)
+        )
         menu_bar.add_cascade(label="About", menu=about_menu)
 
         self.config(menu=menu_bar)

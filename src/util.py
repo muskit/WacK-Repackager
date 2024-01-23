@@ -6,6 +6,20 @@ import sys
 from tkinter import Widget
 
 
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+
+VERSION = open(resource_path("version.txt")).read().strip()
+
+
 def song_id_from_int(num: int):
     if num < 0:
         raise ValueError("cannot be negative")
@@ -65,14 +79,3 @@ def enable_children_widgets(widget: Widget):
 def sanitize(file_name: str):
     blacklist = ["\\", "/", ":", "*", "?", '"', "'", "<", ">", "|"]
     return "".join([x if x not in blacklist else "_" for x in file_name])
-
-
-def resource_path(relative_path):
-    """Get absolute path to resource, works for dev and for PyInstaller"""
-    try:
-        # PyInstaller creates a temp folder and stores path in _MEIPASS
-        base_path = sys._MEIPASS
-    except Exception:
-        base_path = os.path.abspath(".")
-
-    return os.path.join(base_path, relative_path)

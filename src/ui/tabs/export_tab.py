@@ -320,7 +320,10 @@ class ExportTab(Frame):
 
     def __refresh_song_stats(self):
         self.lbl_song_stats.configure(
-            text=f"{len(self.songs_processed)}/{len(self.treeview.get_children())} songs processed"
+            text=(
+                f"{len(self.songs_processed)}/{len(self.treeview.get_children())}"
+                f" song{"s" if len(self.songs_processed) != 1 else ""} processed"
+            )
         )
 
     def __action_path_change(self, *_):

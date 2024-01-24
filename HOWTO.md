@@ -1,5 +1,5 @@
 # Preparing files
-This is a guide to populating the `data` working folder in this project's directory, which will eventually contain all relevant data for repacking WACCA charts. You may set up this folder elsewhere for storage space reasons; the app will let you choose a different working folder path. We will refer to this working folder as `data` throughout the guide.
+This is a guide to populating the `data` working folder in this project's directory, which will eventually contain all relevant data for repacking charts. You may set up this folder elsewhere for storage space reasons; the app will let you choose a different working folder path. We will refer to this working folder as `data` throughout the guide.
 
 Start with the `data` folder bundled with the app (or in the `dist` folder of this repo). Feel free to move it to another location as mentioned above.
 
@@ -20,7 +20,7 @@ If you want to export music videos, the process for doing so involves a **lot** 
 You will need [ffmpeg](https://www.ffmpeg.org/download.html) installed and on PATH.
 
 1. Set the paths in `convert-videos.bat` as needed:
-    - `video_path` to `<WACCA>/app/WindowsNoEditor/Mercury/Content/Movie`
+    - `video_path` to `<WAC>/app/WindowsNoEditor/Mercury/Content/Movie`
     - `export_path` to `data/movies`
 2. Run `convert-videos.bat` to convert all .usm videos to .mp4 in your working folder.
     - This script will take a **very** long time to finish. As mentioned earlier, I recommend running this in the background while you proceed to the next sections.
@@ -32,7 +32,7 @@ Due to the audio indexing data in this project only done for **Reverse 3.07**, t
 
 You will need the latest version of [Audio Cue Editor (ACE)](https://github.com/LazyBone152/ACE).
 
-For each of the files below located in `<WACCA>/app/WindowsNoEditor/Mercury/Content/Sound/Bgm`...
+For each of the files below located in `<WAC>/app/WindowsNoEditor/Mercury/Content/Sound/Bgm`...
 
 - MER_BGM.awb
 - MER_BGM_V3_01.awb
@@ -65,7 +65,7 @@ For each of the files below located in `<WACCA>/app/WindowsNoEditor/Mercury/Cont
 
 You will need the latest [UAssetGUI](https://github.com/atenfyr/UAssetGUI).
 
-1. Open `<WACCA>/app/WindowsNoEditor/Mercury/Content/Table/MusicParameterTable.uasset` with UAssetGUI.
+1. Open `<WAC>/app/WindowsNoEditor/Mercury/Content/Table/MusicParameterTable.uasset` with UAssetGUI.
 2. In the toolbar, go to `File > Save As`.
 3. Save it as a `UAssetAPI JSON` file in `data/metadata.json`.
 
@@ -75,7 +75,7 @@ You will need the latest [UAssetGUI](https://github.com/atenfyr/UAssetGUI).
 For this, you will need [Unreal Engine resource viewer](https://www.gildor.org/en/projects/umodel)
 
 1. Run `umodel_64.exe` and configure its Startup Options.
-    - Set "Path to game files" to `<WACCA>/app/WindowsNoEditor/Mercury/Content/UI/Textures/JACKET`.
+    - Set "Path to game files" to `<WAC>/app/WindowsNoEditor/Mercury/Content/UI/Textures/JACKET`.
     - Enable "Override game detection" and set it to "Unreal engine 4.19."
     - Click OK.
 2. In the left panel, right click on "All packages," then click on "Export folder content."
@@ -84,4 +84,4 @@ For this, you will need [Unreal Engine resource viewer](https://www.gildor.org/e
 
 ## Charts (`data/MusicData`)
 *~59.5 MB*
-Simply copy the `<WACCA>/app/WindowsNoEditor/Mercury/Content/MusicData` folder into `data`.
+Simply copy the `<WAC>/app/WindowsNoEditor/Mercury/Content/MusicData` folder into `data`.

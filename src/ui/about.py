@@ -25,7 +25,7 @@ class About(Frame):
 
         Label(
             self,
-            text="A tool for repacking WACCA songs.",
+            text="A tool for repacking game songs.",
             anchor=CENTER,
         ).pack(fill=X, padx=40)
 

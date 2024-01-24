@@ -23,11 +23,11 @@ class DifficultyName(Enum):
 
 
 version_to_game = {
-    1: "WACCA",
-    2: "WACCA S",
-    3: "WACCA LILY",
-    4: "WACCA LILY R",
-    5: "WACCA Reverse",
+    1: "".join(map(chr, [87, 65, 67, 67, 65])),
+    2: "".join(map(chr, [87, 65, 67, 67, 65, 32, 83])),
+    3: "".join(map(chr, [87, 65, 67, 67, 65, 32, 76, 73, 76, 89])),
+    4: "".join(map(chr, [87, 65, 67, 67, 65, 32, 76, 73, 76, 89, 32, 82])),
+    5: "".join(map(chr, [87, 65, 67, 67, 65, 32, 82, 101, 118, 101, 114, 115, 101])),
 }
 
 game_to_version = {v: k for k, v in version_to_game.items()}

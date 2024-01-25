@@ -28,9 +28,7 @@ jobs:
 
         - id: set_output
           run: |
-            echo "Repo: ${{ github.repository }}"
-            echo "Release info: ${{ steps.latest_release }}"
-            echo "Comparing latest release (${{ steps.latest_release.release }}) and repo version (${{ env.VERSION }})."
+            echo "Comparing latest release (${{ steps.latest_release.outputs.release }}) and repo version (${{ env.VERSION }})."
             verlte() {
                 [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
             }

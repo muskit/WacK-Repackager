@@ -60,7 +60,7 @@ jobs:
       run: |
         VER=$(cat version.txt)
         echo "VERSION=$VER" >> $GITHUB_ENV
-        echo "PKG_NAME=WacK-Repackager-$VER_windows-x64" >> $GITHUB_ENV
+        echo "PKG_NAME=WacK-Repackager-${VER}_windows-x64" >> $GITHUB_ENV
 
     - name: Install pip requirements
       run: |
@@ -82,7 +82,7 @@ jobs:
     - name: Create package zip
       uses: montudor/action-zip@v1
       with:
-        args: zip -qq -r ${{ env.PKG_NAME }}.zip "dist/WacK Repackager"
+        args: cd dist && zip -qq -r ../${{ env.PKG_NAME }}.zip "WacK Repackager"
 
     - name: Create Release
       id: create_release

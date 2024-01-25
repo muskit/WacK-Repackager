@@ -26,17 +26,18 @@ jobs:
 
         - id: set_output
           run: |
+            echo "Repo: ${{ github.repository }}""
+            echo "Comparing latest release (${{ steps.latest_release.release }}) and repo version (${{ env.VERSION }})."
             verlte() {
                 [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
             }
             verlt() {
                 [ "$1" = "$2" ] && return 1 || verlte $1 $2
             }
-            echo "Comparing latest release (${{ steps.latest_release.release }}) and repo version (${{ env.VERSION }})."
             if $(verlt ${{ steps.latest_release.release }} ${{ env.VERSION }}); then
-              echo "::set-output name=should_update::true"
+              echo "should_update=true" >> "$GITHUB_OUTPUT"
             else
-              echo "::set-output name=should_update::false"
+              echo "should_update=false" >> "$GITHUB_OUTPUT"
             fi
           
         

@@ -32,9 +32,7 @@ jobs:
             verlt() {
                 [ "$1" = "$2" ] && return 1 || verlte $1 $2
             }
-
-            echo "Comparing latest release (${{ steps.latest_release.release }}) and repo version (${{ env.VERSION }}).
-            
+            echo "Comparing latest release (${{ steps.latest_release.release }}) and repo version (${{ env.VERSION }})."
             if $(verlt ${{ steps.latest_release.release }} ${{ env.VERSION }}); then
               echo "::set-output name=should_update::true"
             else

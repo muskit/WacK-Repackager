@@ -68,6 +68,7 @@ jobs:
     - name: Rename folder
       run: |
         DIR_NAME=WacK-Repackager-${{ env.VERSION }}_windows-x64
+        mv dist $DIR_NAME
         echo "DIR_NAME=$DIR_NAME" >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v2

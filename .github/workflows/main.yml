@@ -95,4 +95,5 @@ jobs:
       with:
         name: WacK Repackager ${{ env.VERSION }}
         tag: ${{ env.VERSION }}
-        artifacts: ${{ env.PKG_NAME }}.zip
+        artifacts: "*"
+        allowUpdates: true

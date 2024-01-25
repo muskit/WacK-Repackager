@@ -62,13 +62,12 @@ jobs:
     - name: Package Application
       uses: JackMcKew/pyinstaller-action-windows@main
       with:
-        path: .
+        path: src
         spec: build.spec
     
     - name: Move EXE
       run: |
-        mv "dist/windows/WacK Repackager.exe" "dist/WacK Repackager.exe"
-        rm -rf dist/windows
+        mv "src/dist/windows/WacK Repackager.exe" "dist/WacK Repackager.exe"
 
     - name: Craft Package Name
       run: |

@@ -109,27 +109,27 @@ def init_songs(progress: TaskProgress):
                     jacket_path = key["Value"]
                 # ChartInfo Levels; "+0" = no chart
                 elif key["Name"] == "DifficultyNormalLv":
-                    levels[0] = key["Value"]
+                    levels[0] = round(float(key["Value"]), 2)
                 elif key["Name"] == "DifficultyHardLv":
-                    levels[1] = key["Value"]
+                    levels[1] = round(float(key["Value"]), 2)
                 elif key["Name"] == "DifficultyExtremeLv":
-                    levels[2] = key["Value"]
+                    levels[2] = round(float(key["Value"]), 2)
                 elif key["Name"] == "DifficultyInfernoLv":
-                    levels[3] = key["Value"]
+                    levels[3] = round(float(key["Value"]), 2)
                 # Audio Previews
                 elif key["Name"] == "PreviewBeginTime":
-                    audio_preview = key["Value"]
+                    audio_preview = round(float(key["Value"]), 2)
                 elif key["Name"] == "PreviewSeconds":
-                    audio_preview_len = key["Value"]
+                    audio_preview_len = round(float(key["Value"]), 2)
                 # Clear Requirements
                 elif key["Name"] == "ClearNormaRateNormal":
-                    level_clear_requirements[0] = key["Value"]
+                    level_clear_requirements[0] = round(float(key["Value"]), 2)
                 elif key["Name"] == "ClearNormaRateHard":
-                    level_clear_requirements[1] = key["Value"]
+                    level_clear_requirements[1] = round(float(key["Value"]), 2)
                 elif key["Name"] == "ClearNormaRateExtreme":
-                    level_clear_requirements[2] = key["Value"]
+                    level_clear_requirements[2] = round(float(key["Value"]), 2)
                 elif key["Name"] == "ClearNormaRateInferno":
-                    level_clear_requirements[3] = key["Value"]
+                    level_clear_requirements[3] = round(float(key["Value"]), 2)
                 # ChartInfo Designers
                 elif key["Name"] == "NotesDesignerNormal":
                     level_designer[0] = key["Value"]

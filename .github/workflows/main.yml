@@ -72,9 +72,9 @@ jobs:
     
     - name: Compose package
       run: |
-        mkdir dist/WacK Repackager
-        mv "src/dist/windows/WacK Repackager.exe" "dist/WacK Repackager/WacK Repackager.exe"
-        mv "dist/data" "dist/WacK Repackager/data"
+        mkdir "dist/WacK Repackager"
+        mv "src/dist/windows/WacK Repackager.exe" "dist/WacK Repackager/"
+        mv -r "dist/data" "dist/WacK Repackager/data"
 
     - name: Craft package name
       run: |

@@ -20,13 +20,15 @@ jobs:
             echo "VERSION=$VER" >> $GITHUB_ENV
             
         - id: latest_release
+          name: Get latest release
           uses: pozetroninc/github-action-get-latest-release@master
           with:
             repository: ${{ github.repository }}
 
         - id: set_output
           run: |
-            echo "Repo: ${{ github.repository }}""
+            echo "Repo: ${{ github.repository }}"
+            echo "Release info: ${{ steps.latest_release }}"
             echo "Comparing latest release (${{ steps.latest_release.release }}) and repo version (${{ env.VERSION }})."
             verlte() {
                 [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]

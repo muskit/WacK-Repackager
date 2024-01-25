@@ -79,11 +79,10 @@ jobs:
         mv "src/dist/windows/WacK Repackager.exe" "dist/WacK Repackager/"
         mv "dist/data" "dist/WacK Repackager/data"
 
-    - uses: vimtor/action-zip@v1.1
+    - name: Create package zip
+      uses: montudor/action-zip@v1
       with:
-        files: "dist/WacK Repackager"
-        recursive: false
-        dest: "${{ env.PKG_NAME }}.zip"
+        args: zip -qq -r ${{ env.PKG_NAME }}.zip "dist/WacK Repackager"
 
     - name: Create Release
       id: create_release

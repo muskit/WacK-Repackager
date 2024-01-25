@@ -28,16 +28,14 @@ jobs:
 
         - id: set_output
           run: |
-            echo "Repo: ${{ github.repository }}"
-            echo "Release info: ${{ steps.latest_release }}"
-            echo "Comparing latest release (${{ steps.latest_release.release }}) and repo version (${{ env.VERSION }})."
+            echo "Comparing latest release (${{ steps.latest_release.outputs.release }}) and repo version (${{ env.VERSION }})."
             verlte() {
                 [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
             }
             verlt() {
                 [ "$1" = "$2" ] && return 1 || verlte $1 $2
             }
-            if $(verlt ${{ steps.latest_release.release }} ${{ env.VERSION }}); then
+            if $(verlt ${{ steps.latest_release.outputs.release }} ${{ env.VERSION }}); then
               echo "Latest release is not older than repo version; no update needed."
               echo "should_update=false" >> "$GITHUB_OUTPUT"
             else

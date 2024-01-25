@@ -74,7 +74,7 @@ jobs:
       run: |
         mkdir "dist/WacK Repackager"
         mv "src/dist/windows/WacK Repackager.exe" "dist/WacK Repackager/"
-        mv -r "dist/data" "dist/WacK Repackager/data"
+        mv "dist/data" "dist/WacK Repackager/data"
 
     - name: Craft package name
       run: |

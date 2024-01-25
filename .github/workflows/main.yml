@@ -1,0 +1,72 @@
+name: Package Application with Pyinstaller
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  version_compare:
+    runs-on: ubuntu-latest
+    outputs:
+      should_update: ${{ steps.set_output.outputs.should_update }}
+    steps:
+        - uses: actions/checkout@v2
+    
+        - name: Get Commit version
+          run: |
+            VER=$(cat version.txt)
+            echo "VERSION=$VER" >> $GITHUB_ENV
+            
+        - id: latest_release
+          uses: pozetroninc/github-action-get-latest-release@master
+          with:
+            repository: ${{ github.repository }}
+
+        - id: set_output
+          run: |
+            verlte() {
+                [  "$1" = "`echo -e "$1\n$2" | sort -V | head -n1`" ]
+            }
+            verlt() {
+                [ "$1" = "$2" ] && return 1 || verlte $1 $2
+            }
+
+            echo "Comparing latest release (${{ steps.latest_release.release }}) and repo version (${{ env.VERSION }}).
+            
+            if $(verlt ${{ steps.latest_release.release }} ${{ env.VERSION }}); then
+              echo "::set-output name=should_update::true"
+            else
+              echo "::set-output name=should_update::false"
+            fi
+          
+        
+  build:
+
+    runs-on: ubuntu-latest
+    needs: [version_compare]
+    if: needs.version_compare.outputs.should_update == 'true'
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Get version
+      run: |
+        VER=$(cat version.txt)
+        echo "VERSION=$VER" >> $GITHUB_ENV
+
+    - name: Package Application
+      uses: JackMcKew/pyinstaller-action-windows@main
+      with:
+        path: .
+        spec: build.spec
+
+    - name: Rename folder
+      run: |
+        DIR_NAME=WacK-Repackager-${{ env.VERSION }}_windows-x64
+        echo "DIR_NAME=$DIR_NAME" >> $GITHUB_ENV
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.VERSION }}
+        path: ${{ env.DIR_NAME }}

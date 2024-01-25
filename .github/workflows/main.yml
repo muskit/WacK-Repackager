@@ -59,22 +59,38 @@ jobs:
         VER=$(cat version.txt)
         echo "VERSION=$VER" >> $GITHUB_ENV
 
+    - name: Install pip requirements
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
     - name: Package Application
       uses: JackMcKew/pyinstaller-action-windows@main
       with:
         path: src
         spec: build.spec
     
-    - name: Move EXE
+    - name: Compose package
       run: |
-        mv "src/dist/windows/WacK Repackager.exe" "dist/WacK Repackager.exe"
+        mkdir dist/WacK Repackager
+        mv "src/dist/windows/WacK Repackager.exe" "dist/WacK Repackager/WacK Repackager.exe"
+        mv "dist/data" "dist/WacK Repackager/data"
 
-    - name: Craft Package Name
+    - name: Craft package name
       run: |
         PKG_NAME=WacK-Repackager-${{ env.VERSION }}_windows-x64
         echo "PKG_NAME=$PKG_NAME" >> $GITHUB_ENV
 
-    - uses: actions/upload-artifact@v2
+    - name: Upload package
+      uses: actions/upload-artifact@v2
       with:
         name: ${{ env.PKG_NAME }}
         path: dist
+
+    - name: Create Release
+      id: create_release
+      uses: ncipollo/release-action@v1
+      with:
+        name: WacK Repackager ${{ env.VERSION }}
+        tag: ${{ env.VERSION }}
+        artifacts: ${{ env.PKG_NAME }}.zip

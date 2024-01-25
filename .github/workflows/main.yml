@@ -47,10 +47,12 @@ jobs:
           
         
   build:
-
     runs-on: ubuntu-latest
     needs: [version_check]
     if: needs.version_check.outputs.should_update == 'true'
+    permissions:
+      contents: write
+
     steps:
     - uses: actions/checkout@v2
 

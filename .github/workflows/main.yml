@@ -67,16 +67,15 @@ jobs:
     
     - name: Move EXE
       run: |
-        mv dist/windows/WacK-Repackager.exe dist/WacK-Repackager.exe
+        mv "dist/windows/WacK Repackager.exe" "dist/WacK Repackager.exe"
         rm -rf dist/windows
 
-    - name: Rename folder
+    - name: Craft Package Name
       run: |
-        DIR_NAME=WacK-Repackager-${{ env.VERSION }}_windows-x64
-        mv dist $DIR_NAME
-        echo "DIR_NAME=$DIR_NAME" >> $GITHUB_ENV
+        PKG_NAME=WacK-Repackager-${{ env.VERSION }}_windows-x64
+        echo "PKG_NAME=$PKG_NAME" >> $GITHUB_ENV
 
     - uses: actions/upload-artifact@v2
       with:
-        name: ${{ env.VERSION }}
-        path: ${{ env.DIR_NAME }}
+        name: ${{ env.PKG_NAME }}
+        path: dist

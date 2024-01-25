@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  version_compare:
+  version_check:
     runs-on: ubuntu-latest
     outputs:
       should_update: ${{ steps.set_output.outputs.should_update }}
@@ -24,6 +24,7 @@ jobs:
           uses: pozetroninc/github-action-get-latest-release@master
           with:
             repository: ${{ github.repository }}
+            token: ${{ secrets.GITHUB_TOKEN }}
 
         - id: set_output
           run: |
@@ -46,8 +47,8 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    needs: [version_compare]
-    if: needs.version_compare.outputs.should_update == 'true'
+    needs: [version_check]
+    if: needs.version_check.outputs.should_update == 'true'
     steps:
     - uses: actions/checkout@v2
 

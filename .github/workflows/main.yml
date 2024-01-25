@@ -19,8 +19,8 @@ jobs:
             VER=$(cat version.txt)
             echo "VERSION=$VER" >> $GITHUB_ENV
             
-        - id: latest_release
-          name: Get latest release
+        - name: Get latest release
+          id: latest_release
           uses: pozetroninc/github-action-get-latest-release@master
           with:
             repository: ${{ github.repository }}
@@ -64,6 +64,11 @@ jobs:
       with:
         path: .
         spec: build.spec
+    
+    - name: Move EXE
+      run: |
+        mv dist/windows/WacK-Repackager.exe dist/WacK-Repackager.exe'
+        rm -rf dist/windows
 
     - name: Rename folder
       run: |

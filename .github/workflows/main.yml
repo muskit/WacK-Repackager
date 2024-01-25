@@ -60,6 +60,7 @@ jobs:
       run: |
         VER=$(cat version.txt)
         echo "VERSION=$VER" >> $GITHUB_ENV
+        echo "PKG_NAME=WacK-Repackager-$VER_windows-x64" >> $GITHUB_ENV
 
     - name: Install pip requirements
       run: |
@@ -78,16 +79,11 @@ jobs:
         mv "src/dist/windows/WacK Repackager.exe" "dist/WacK Repackager/"
         mv "dist/data" "dist/WacK Repackager/data"
 
-    - name: Craft package name
-      run: |
-        PKG_NAME=WacK-Repackager-${{ env.VERSION }}_windows-x64
-        echo "PKG_NAME=$PKG_NAME" >> $GITHUB_ENV
-
-    - name: Upload package
-      uses: actions/upload-artifact@v2
+    - uses: vimtor/action-zip@v1.1
       with:
-        name: ${{ env.PKG_NAME }}
-        path: dist
+        files: "dist/WacK Repackager"
+        recursive: false
+        dest: "${{ env.PKG_NAME }}.zip"
 
     - name: Create Release
       id: create_release
@@ -95,5 +91,6 @@ jobs:
       with:
         name: WacK Repackager ${{ env.VERSION }}
         tag: ${{ env.VERSION }}
-        artifacts: "*"
+        artifactErrorsFailBuild: true
+        artifacts: "${{ env.PKG_NAME }}.zip"
         allowUpdates: true

@@ -16,11 +16,10 @@ def meta_mer(song: SongMetadata) -> str:
     """Contents of meta.mer based on song metadata."""
     ret = (
         f"#TITLE {song.name}\n"
-        f"#RUBI {song.rubi}\n"
+        f"#RUBI_TITLE {song.rubi}\n"
         f"#ARTIST {song.artist}\n"
         f"#GENRE {category_index[song.genre_id]}\n"
         f"#BPM {song.tempo}\n"
-        f"#JACKET_FILE_PATH jacket.png\n"
     )
     if song.copyright != None:
         ret += f"#COPYRIGHT {song.copyright}\n"
@@ -31,20 +30,10 @@ def meta_mer(song: SongMetadata) -> str:
 def diff_mer(mer: str, diff: Difficulty, audio_ext: str) -> str:
     """Returns a chart mer with WacK-specific meta tags."""
 
-    ## keep mer line if not tag; otherwise, contains whitelisted tag
-    whitelisted_tag_contains = ["OFFSET", "BODY"]
-
-    ret = "\n".join(
-        line
-        for line in mer.splitlines()
-        if any(
-            not line.startswith("#") or tag in line for tag in whitelisted_tag_contains
-        )
-    )
-
     pre = (
+        f"#--- BEGIN WACK TAGS ---\n"
         f"#LEVEL {diff.diffLevel}\n"
-        f"#MUSIC_FILE_PATH {diff.audio_id}.{audio_ext}\n"
+        f"#AUDIO {diff.audio_id}.{audio_ext}\n"
         f"#CLEAR_THRESHOLD {diff.clearRequirement}\n"
         f"#AUTHOR {diff.designer}\n"
         f"#PREVIEW_TIME {diff.audio_preview_time}\n"
@@ -52,9 +41,9 @@ def diff_mer(mer: str, diff: Difficulty, audio_ext: str) -> str:
     )
 
     if diff.video != None:
-        pre += f"#MOVIE_FILE_PATH {os.path.basename(diff.video)}\n"
+        pre += f"#MOVIE {os.path.basename(diff.video)}\n"
 
-    return pre + ret
+    return pre + "#--- END WACK TAGS ---\n" + mer
 
 
 def export_song(song: SongMetadata):

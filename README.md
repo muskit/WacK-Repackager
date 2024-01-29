@@ -2,6 +2,6 @@
 
 Application for creating WacK chart packages from Reverse 3.07.
 
-Head over to [HOWTO](HOWTO.md) for preparation and running.
+Head over to [HOWTO](HOWTO.md) for data preparation.
 
-Everything here is WIP right now.
+You may want to check out the [wack package specification](https://github.com/muskit/wack-format).

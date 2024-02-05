@@ -16,7 +16,7 @@ from PIL import Image, ImageTk
 from util import resource_path
 import config
 from data import database
-from .tabs.listing_tab import ListingTab
+from ui.tabs.listing_tab import ListingTab
 
 
 class TaskState(Enum):

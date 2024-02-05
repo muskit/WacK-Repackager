@@ -76,6 +76,6 @@ def enable_children_widgets(widget: Widget):
                 pass
 
 
-def sanitize(file_name: str):
+def sanitize_song(folder_name: str):
     blacklist = ["\\", "/", ":", "*", "?", '"', "'", "<", ">", "|"]
-    return "".join([x if x not in blacklist else "_" for x in file_name])
+    return "".join([x if x not in blacklist else "_" for x in folder_name]).strip()

@@ -65,7 +65,7 @@ def export_song(song: SongMetadata):
     )
 
     # create song folder
-    song_path = os.path.join(out, sanitize(f"{song.artist} - {song.name}"))
+    song_path = os.path.join(out, sanitize_song(f"{song.artist} - {song.name}"))
     if not os.path.exists(song_path):
         Path(song_path).mkdir(parents=True, exist_ok=True)
 

@@ -5,7 +5,7 @@ import webbrowser
 
 from PIL import Image, ImageTk
 
-import util
+from .. import util
 
 
 class About(Frame):

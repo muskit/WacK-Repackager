@@ -8,8 +8,8 @@ from PIL import Image
 
 import config
 from util import awb_index, resource_path, song_id_from_int
-from ui.data_setup import TaskProgress, TaskState
-from ui.tabs.listing_tab import ListingTab
+from ..ui.data_setup import TaskProgress, TaskState
+from ..ui.tabs.listing_tab import ListingTab
 from .metadata import Difficulty, DifficultyName, SongMetadata
 
 ## NOTE: ID KEYS ARE HYPHENATED

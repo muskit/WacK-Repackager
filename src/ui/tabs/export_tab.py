@@ -3,8 +3,8 @@ from __future__ import annotations
 from enum import IntEnum, StrEnum
 from queue import Queue, Empty
 from threading import Thread
+import traceback
 from typing import Any
-import ffmpeg
 
 from tkinter import *
 from tkinter import filedialog, messagebox, font as tkFont
@@ -448,6 +448,7 @@ class ExportTab(Frame):
                     alerts = export_song(song)
                 except Exception as e:
                     print(f"Error exporting {id}: {e}")
+                    traceback.print_exc()
                     self.song_errors[id] = str(e)
                     self.ui_queue.put_nowait(("table_status", id, "error"))
                     self.songs_processed.add(id)

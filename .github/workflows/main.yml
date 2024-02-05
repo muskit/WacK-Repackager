@@ -70,7 +70,7 @@ jobs:
       with:
         path: src
         spec: build.spec
-        requirements: requirements.txt
+        requirements: ../requirements.txt
     
     - name: Compose package
       run: |

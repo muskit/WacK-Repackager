@@ -100,7 +100,7 @@ def export_song(song: SongMetadata):
                 else:
                     dest = os.path.join(song_path, f"{a_id}.{audio_ext}")
                     if audio_ext == "mp3":
-                        print("Converting {a_id} to MP3...")
+                        print(f"Converting {a_id} to MP3...")
                         ffmpeg.input(src).output(
                             dest, audio_bitrate="320k", loglevel="warning"
                         ).run()

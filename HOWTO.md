@@ -17,6 +17,8 @@ Start with the `data` folder bundled with the app (or in the `dist` folder of th
 
 If you want to export music videos, the process for doing so involves a **lot** of waiting. Therefore it is recommended to run this in the background while you do the other processes.
 
+Videos exported using this process may not play properly as mentioned in [this issue](https://github.com/muskit/WacK-Repackager/issues/2).
+
 You will need [ffmpeg](https://www.ffmpeg.org/download.html) installed and on PATH.
 
 1. Set the paths in `convert-videos.bat` as needed:

@@ -65,9 +65,10 @@ For each of the files below located in `<WAC>/app/WindowsNoEditor/Mercury/Conten
 
 You will need the latest [UAssetGUI](https://github.com/atenfyr/UAssetGUI).
 
-1. Open `<WAC>/app/WindowsNoEditor/Mercury/Content/Table/MusicParameterTable.uasset` with UAssetGUI.
-2. In the toolbar, go to `File > Save As`.
-3. Save it as a `UAssetAPI JSON` file in `data/metadata.json`.
+1. Open UAssetGUI. In the rop right corner, set the version dropdown to 4.19. 
+2. Open `<WAC>/app/WindowsNoEditor/Mercury/Content/Table/MusicParameterTable.uasset`.
+3. In the toolbar, go to `File > Save As`.
+4. Save it as a `UAssetAPI JSON` file in `data/metadata.json`.
 
 ## Jackets
 *~54.4 MB*

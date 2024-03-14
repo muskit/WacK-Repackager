@@ -87,4 +87,4 @@ For this, you will need [Unreal Engine resource viewer](https://www.gildor.org/e
 
 ## Charts (`data/MusicData`)
 *~59.5 MB*
-Simply copy the `<WAC>/app/WindowsNoEditor/Mercury/Content/MusicData` folder into `data`.
+Simply copy the `MusicData` folder at `<WAC>/app/WindowsNoEditor/Mercury/Content/MusicData` into `data`.

@@ -214,7 +214,7 @@ def init_songs(progress: TaskProgress):
                     audio_id=audio[0],
                     audio_offset=audio[1],
                     audio_preview_time=audio_preview,
-                    audio_preview_length=audio_preview_len,
+                    audio_preview_duration=audio_preview_len,
                     video=background_video[i],
                     designer=level_designer[i],
                     clearRequirement=level_clear_requirements[i],

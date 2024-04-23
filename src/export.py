@@ -37,7 +37,7 @@ def diff_mer(mer: str, diff: Difficulty, audio_ext: str) -> str:
         f"#CLEAR_THRESHOLD {diff.clearRequirement}\n"
         f"#AUTHOR {diff.designer}\n"
         f"#PREVIEW_TIME {diff.audio_preview_time}\n"
-        f"#PREVIEW_LENGTH {diff.audio_preview_length}\n"
+        f"#PREVIEW_DURATION {diff.audio_preview_duration}\n"
     )
 
     if diff.video != None:

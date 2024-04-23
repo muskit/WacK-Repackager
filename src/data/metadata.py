@@ -38,7 +38,7 @@ class Difficulty:
     audio_id: str
     audio_offset: str
     audio_preview_time: str
-    audio_preview_length: str
+    audio_preview_duration: str
     video: str | None
     designer: str
     clearRequirement: str

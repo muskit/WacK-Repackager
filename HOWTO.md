@@ -9,7 +9,7 @@ Start with the `data` folder bundled with the app (or in the `dist` folder of th
 1. [Videos](#videos-datamovies)
 2. [Song Audio](#song-audio-datamer_bgm)
 3. [Metadata](#metadata-datametadatajson)
-4. [Jackets](#jackets)
+4. [Jackets](#jackets-datajackets)
 5. [Charts](#charts-datamusicdata)
 
 ## Videos (`data/movies`)
@@ -19,7 +19,7 @@ If you want to export music videos, the process for doing so involves a **lot** 
 
 Videos exported using this process may not play properly as mentioned in [this issue](https://github.com/muskit/WacK-Repackager/issues/2).
 
-You will need [ffmpeg](https://www.ffmpeg.org/download.html) installed and on PATH.
+You will need [FFmpeg](https://www.ffmpeg.org/download.html) installed and on PATH.
 
 1. Set the paths in `convert-videos.bat` as needed:
     - `video_path` to `<WAC>/app/WindowsNoEditor/Mercury/Content/Movie`
@@ -32,7 +32,7 @@ You will need [ffmpeg](https://www.ffmpeg.org/download.html) installed and on PA
 
 Due to the audio indexing data in this project only done for **Reverse 3.07**, these steps will only work for game files of that version.
 
-You will need the latest version of [Audio Cue Editor (ACE)](https://github.com/LazyBone152/ACE).
+You will need the latest version of [Audio Cue Editor (ACE)](https://github.com/LazyBone152/ACE) (Windows only, works via Wine on Mac/Linux).
 
 For each of the files below located in `<WAC>/app/WindowsNoEditor/Mercury/Content/Sound/Bgm`...
 
@@ -48,7 +48,7 @@ For each of the files below located in `<WAC>/app/WindowsNoEditor/Mercury/Conten
 ...follow these steps on each file:
 
 1. Load the file in ACE using `File > Load (AWB)`.
-    - If asked to open the matching ACB, click "No."
+    - If asked to open the matching ACB, click "No".
 2. Export all of the AWB's streams using `Tools > Extract All (wav)` into a folder in `data/MER_BGM` depending on the current AWB file according to the table:
 
 | AWB File          | Folder in MER_BGM |
@@ -65,23 +65,23 @@ For each of the files below located in `<WAC>/app/WindowsNoEditor/Mercury/Conten
 ## Metadata (`data/metadata.json`)
 *~5.6 MB*
 
-You will need the latest [UAssetGUI](https://github.com/atenfyr/UAssetGUI).
+You will need the latest [UAssetGUI](https://github.com/atenfyr/UAssetGUI) (Windows only).
 
-1. Open UAssetGUI. In the rop right corner, set the version dropdown to 4.19. 
-2. Open `<WAC>/app/WindowsNoEditor/Mercury/Content/Table/MusicParameterTable.uasset`.
+1. Open UAssetGUI. In the top right corner, set the version dropdown to 4.19. 
+2. Open `<WAC>/app/WindowsNoEditor/Mercury/Content/Table/MusicParameterTable.uasset`. Ensure the corresponding `.uexp` file exists in the folder as well.
 3. In the toolbar, go to `File > Save As`.
 4. Save it as a `UAssetAPI JSON` file in `data/metadata.json`.
 
-## Jackets
+## Jackets (`data/jackets`)
 *~54.4 MB*
 
-For this, you will need [Unreal Engine resource viewer](https://www.gildor.org/en/projects/umodel)
+For this, you will need [UE Viewer](https://www.gildor.org/en/projects/umodel) (Windows only, works via Wine on Mac/Linux).
 
 1. Run `umodel_64.exe` and configure its Startup Options.
     - Set "Path to game files" to `<WAC>/app/WindowsNoEditor/Mercury/Content/UI/Textures/JACKET`.
-    - Enable "Override game detection" and set it to "Unreal engine 4.19."
+    - Enable "Override game detection" and set it to "Unreal engine 4.19".
     - Click OK.
-2. In the left panel, right click on "All packages," then click on "Export folder content."
+2. In the left panel, right click on "All packages", then click on "Export folder content".
     - Under "Texture Export," set format to PNG, and the path to `data/jackets`.
     - Click OK to begin exporting jacket images.
 

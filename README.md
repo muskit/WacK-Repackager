@@ -1,3 +1,7 @@
+# DEPRECATED
+
+The WacK format has been deprecated in favor of the more versatile `.sat` format. As such, an equivalent application that accomodates the new format can be found [here](https://github.com/muskit/MercuryConverter).
+
 # WacK-Repackager
 
 ![image](https://github.com/muskit/WacK-Repackager/assets/15199219/bb3e4def-5411-481d-9b64-98d4fea80bd7)
